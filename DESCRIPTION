@@ -1,0 +1,32 @@
+Package: soccatoa
+Title: SOCCATOA tool
+Version: 0.0.0.9000
+Authors@R: 
+    person("Maddalena", "Tigli", , "madtig@ceh.ac.uk", role = c("aut", "cre"))
+Description: N/A
+License: What license is it under?
+Depends: 
+    R (>= 3.5)
+Imports: 
+    bslib,
+    config (>= 0.3.2),
+    dplyr,
+    data.table,
+    ggplot2,
+    golem (>= 0.4.1),
+    htmlwidgets,
+    leaflegend,
+    leaflet,
+    lorem,
+    magrittr,
+    plotly,
+    polished,
+    readr,
+    sf,
+    shiny (>= 1.8.1.1),
+    shinydashboard,
+    shinyjs,
+    shinyvalidate
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.2

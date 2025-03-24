@@ -1,0 +1,314 @@
+
+/*****************************/
+/* Page */
+/*****************************/
+
+/* Ensure the entire page uses flexbox for layout */
+html, body, .container-fluid {
+    margin: 0;
+    padding: 0;
+    height: 100%;  /* Ensure full page height */
+}
+
+body {
+    font-family: 'Calibri', sans-serif;
+    display: flex;
+    flex-direction: column;  /* Use flexbox for vertical layout */
+}
+
+/*Keep Shiny input labels in bold font*/
+.control-label{
+    font-weight: bold;
+}
+
+
+/*Warning messages color*/
+.shiny-output-error-validation{
+    color:#F18968;
+}
+
+/*Success messages color*/
+.success{
+    color:#58BAC1;
+}
+
+
+/*****************************/
+/* Navlist aesthetics*/
+/*****************************/
+
+/****************/
+/* sidebar*/
+/****************/
+
+/* remove borders*/
+.col-sm-2.well {
+    border: none;                  /* Remove the border (contour) */
+    background-color: transparent; /* Remove the background color or set a custom one */
+    padding: 0;                    /* Adjust padding to remove the space around the content */
+    box-shadow: none;              /* Remove any shadow around the container */
+}
+
+/* style side bar */
+.navlist-container .nav-stacked {
+    height: calc(100vh - 100px); /* Full height for the navigation panel  #calc(100vh - 50px) */
+    overflow-y: auto; /* Enables scrolling if content overflows */
+    background-color: #EAEFEC !important; /* color background bar major */
+    padding-left: 20px;  /* Add padding to the left */
+    padding-top: 20px;
+}
+
+/* style side bar text */
+.navlist-container .nav-stacked .nav-item {
+  font-size: 20px; /* Set the font size for the nav items */
+}
+
+/* style side bar text of selection*/
+.navlist-container .nav-stacked .nav-item .active {
+  font-size: 20px; /* Set the font size for the nav items */
+  background-color: #0483A4 !important;
+  color: #EAEFEC;
+}
+
+/****************/
+/* content*/
+/****************/
+.navlist-container .tab-content {
+    padding-right: 20px; /* Add padding to the right */
+    padding-left: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    height: calc(100vh - 100px); /* Ensures the tab content fills the height minus logos (50) #calc(100vh - 50px)*/
+    max-width: 100%;
+    overflow-y: auto; /* Allows scrolling inside content */
+    overflow-x: hidden;  /* don't allow horizontal scrolling */
+    color: #292C2F;       /* Default font color for content */
+    box-sizing: border-box;
+}
+
+/*****************************/
+/* Footer */
+/*****************************/
+
+/* Footer styles */
+.footer {
+    height: 50px;  /* Set fixed height for footer */
+    background-color: #fff;
+    text-align: center;
+    padding: 0;
+    flex-shrink: 0;  /* Prevent footer from shrinking */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Ensure full width */
+}
+
+/* Flexbox container for logos */
+.footer-logo-container {
+    display: flex;
+    justify-content: center;  /* Centers the logos horizontally */
+    align-items: center;      /* Vertically aligns logos */
+    flex-wrap: wrap;          /* Allows logos to wrap on smaller screens */
+    gap: 10px;                /* Adds space between logos */
+    height: 100%;             /* Ensures logos occupy the full footer height */
+}
+
+/* Style for logos*/
+.footer-logo {
+    height: 40px;             /* Set maximum height for logos */
+    max-width: 100%;          /* Ensures logos resize within the footer width */
+    object-fit: contain;      /* Ensures aspect ratio is maintained */
+    margin: 5px 5px;            /* Adds spacing */
+}
+
+
+/*****************************/
+/* Header */
+/*****************************/
+
+/* Footer styles */
+.header {
+    height: 50px;
+    background-color: #EAEFEC;
+    flex-shrink: 0;  /* Prevent footer from shrinking */
+    align-items: center; !important
+    width: 100%; /* Ensure full width */
+}
+
+/*****************************/
+/* buttons */
+/*****************************/
+/*btn-file load inputs*/
+.btn-file {
+    background-color:#0483A4;
+    border-color: #0483A4;
+}
+
+
+/*btn-login login*/
+.btn-login {
+  background-color:#58BAC1;
+  border-color: #58BAC1;
+  font-weight: bold;
+  color: #fff;
+  height: 50px;
+
+}
+
+.btn-logout {
+  background-color:#F18968;
+  border-color: #F18968;
+  font-weight: bold;
+  color: #fff;
+  height: 50px;
+}
+
+.btn-login:hover {
+  background-color: #58BAC1;
+}
+.btn-logout:hover {
+  background-color:#F18968;
+}
+
+
+.btn-run {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    width: 100%;
+    font-size: 100%;
+    background-color: #dc3545; /* Bootstrap danger color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.btn-run i {
+    margin-right: 8px; /* Adjust spacing between icon and text */
+}
+
+
+
+
+/*****************************/
+/* modal login */
+/*****************************/
+/* Adjust the modal content's style */
+.modal-content {
+  background-color: #EAEFEC;
+}
+
+
+/*****************************/
+/*floating images */
+/*****************************/
+.wrapped-image {
+  float: left; /* Makes text wrap around the image */
+  margin: 10px 15px 10px 0; /* Adds space around the image */
+  width: 200px; /* Adjust image size */
+  border-radius: 10px; /* Optional: rounded corners */
+}
+
+.text-content {
+  text-align: justify; /* Makes text align nicely like a newspaper */
+}
+
+/*****************************/
+/*icons */
+/*****************************/
+
+.glyphicon-remove-sign {
+  font-size: 24px;
+  color: #F18968;
+}
+
+.glyphicon-ok {
+  font-size: 24px;
+  color: #58BAC1;
+}
+
+.icon-container {
+  margin: 10px 0; /* Adds spacing between icons */
+  flex-direction: column;  /* Stack icons vertically */
+  justify-content: center; /* Center vertically within the row */
+  height: 100%;
+}
+
+
+/*****************************/
+/* small screens */
+/*****************************/
+
+/* Responsive design adjustments for mobile and small screens */
+@media (max-width: 1000px) {
+    /* Make the entire page a flex container */
+    body, html {
+        display: flex !important;
+        flex-direction: column !important; /* Stack everything vertically */
+        height: 100vh !important;  /* Make the page fill the entire viewport */
+        margin: 0 !important;
+       overflow-y: auto !important; /* Allow scrolling inside tab-content */
+
+    }
+
+
+ /* Ensure the navlist container grows properly */
+
+    .navlist-container .nav-stacked {
+        display: block;!important;  /* Stack the sidebar and content vertically on small screens */
+        height: auto;!important;     /* Let the container expand with content */
+    }
+
+    /* Ensure tab content takes up available space but not too much */
+    .navlist-container {
+        display: block !important;
+        height: auto;!important;
+    }
+
+    .navlist-container .tab-content {
+        padding-bottom: 10%; /* Height of the footer */
+    }
+
+    /* Make sure the footer is always visible */
+    .footer {
+       left: 0;
+       bottom: 0;
+       width: 100%;
+       height: 10%;
+       background-color: #fff;
+       text-align: center;
+    }
+
+    .btn-info, .btn-login, .btn-logout, .btn-danger {
+        width: 100% !important;        /* Make buttons stack on small screens */
+        margin-bottom: 10px;           /* Add space between stacked buttons */
+        max-width: 100%;               /* Prevents the button from being too wide */
+        white-space: nowrap;           /* Prevents the text from breaking into multiple lines */
+        overflow: hidden;              /* Hides any content that goes out of bounds */
+        text-overflow: ellipsis;       /* Shows an ellipsis when the text overflows */
+        padding: 8px 16px;             /* Adjust padding for smaller screens */
+    }
+
+}
+
+#map .navlist-container .tab-content {
+    padding-right: 0%;!important
+    padding-left: 0%;!important
+    padding-top: 0%;!important
+    padding-bottom: 0%;!important
+}
+
+#map .card-body {
+    padding-right: 0px;!important
+    padding-left: 0px;!important
+    padding-top: 0px;!important
+    padding-bottom: 0px;!importan
+}
+
+
+
+
+
+
+

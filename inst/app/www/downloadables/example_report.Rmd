@@ -1,0 +1,37 @@
+---
+title: "SCAIL Combustion: your results"
+output: 
+  pdf_document
+params:
+  my_data: NA
+---
+
+```{r, echo=FALSE}
+options(scipen=999)
+
+today_is <- Sys.time()
+
+survey <- unique(params$my_data$survey)
+
+```
+
+###### ***Report generated on**`r today_is`*
+
+# Report `r survey`
+
+Lorem ipsum odor amet, consectetuer adipiscing elit. Curae nisi nec suscipit, semper interdum quam. Et himenaeos convallis, metus maecenas commodo cursus? Luctus ullamcorper orci dis orci nullam lobortis felis. Consectetur lacinia ipsum volutpat phasellus integer himenaeos amet? Nibh dignissim per mi inceptos conubia gravida?
+
+Quam fermentum sapien parturient; malesuada vestibulum quam. Primis massa facilisis ad mollis pulvinar vehicula est pulvinar. Fringilla non iaculis curae conubia tempus nam pellentesque. Montes fames aenean magna quisque interdum cubilia. Sodales natoque at lectus suspendisse condimentum sociosqu sit rhoncus. Fringilla natoque condimentum metus diam dis quis inceptos. Augue bibendum porta quisque sit ac rutrum; libero luctus nunc. Class interdum magna habitant netus mi augue cras eu mus.
+
+Pretium id parturient rutrum adipiscing pharetra! Fermentum ornare varius velit lobortis conubia montes sit iaculis. Velit fusce quis lobortis sodales ridiculus ante erat fermentum. Habitant tempus in scelerisque sit; vel praesent. Asenectus laoreet nulla suspendisse non tortor integer. Magnis venenatis tempus ante inceptos commodo est. Tincidunt viverra adipiscing praesent vivamus metus habitant. Porta dignissim sociosqu dolor finibus netus imperdiet curae a aliquam. Conubia auctor placerat viverra per libero bibendum massa.
+
+Elit fringilla erat cras purus nostra aliquet malesuada arcu. Sollicitudin proin erat vehicula lacinia quis, et posuere luctus. Feugiat leo nullam scelerisque odio risus litora dolor. Parturient facilisis velit interdum himenaeos odio. Per finibus nisi penatibus quis blandit. Quis ac et porta vehicula suscipit montes hendrerit himenaeos? Rhoncus nostra fames dignissim nisl, a erat non interdum nam. At convallis inceptos efficitur ultricies lectus elit posuere primis. Nascetur sem ac maecenas laoreet venenatis.
+
+```{r, echo=FALSE}
+
+plot(params$my_data)
+```
+
+Nullam montes augue lacinia quisque imperdiet suspendisse turpis? Fringilla dui laoreet nascetur, maximus nullam risus. Augue nostra est amet, ad sollicitudin ipsum. Libero eu torquent varius tincidunt fringilla turpis per. Sodales proin laoreet ridiculus curae lobortis leo feugiat. Hac cubilia taciti rhoncus cubilia purus pretium. Rutrum odio congue habitant senectus aenean nascetur volutpat montes. Phasellus dignissim adipiscing tempor aliquet aenean imperdiet pellentesque dictum.
+
+Class blandit tincidunt ipsum nascetur; tellus elementum ultrices. Tempor nunc habitant conubia neque dignissim interdum accumsan ridiculus. Cras ornare tempor consectetur; inceptos varius ultricies. Tortor dui quisque sociosqu magna cubilia metus. Habitant nisl etiam nulla diam tincidunt quis tristique. Ornare per fames elit litora facilisi sed tincidunt penatibus. Maximus imperdiet laoreet senectus ut magna mauris quam mi. Hac nostra inceptos magna magnis molestie justo per conubia curae.
