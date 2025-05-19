@@ -19,6 +19,7 @@ app_server <- function(input, output, session) {
 
   rv$my_data <- NULL
   rv$data_results <- NULL
+  rv$data_results_B <- NULL
 
   rv$example_locations <- NULL
 

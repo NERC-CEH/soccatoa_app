@@ -1,20 +1,25 @@
-#' run_model
+#' run_model_A
 #' @description function ...
 #' @param df_loaded a df of data loaded
 #' @return df_results
 #' @export
 #'
-
-run_model <- function(df_loaded){
-
-  # model here
-
+run_model_A <- function(df_loaded){
+  #model here
   #example output for now
   model_result <- soccatoa::example_output
   return(model_result)
 }
 
-run_model_new <- function(df_loaded){
+#' run_model_B
+#' @description function ...
+#' @param df_loaded a df of data loaded
+#' @param yrstart start year
+#' @param yrend end year
+#' @return df_results
+#' @export
+#'
+run_model_B <- function(df_loaded, yrstart, yrend){
 
   model <- function(beta,gamma,dco2,dta){
     dscarb = beta*dco2 + gamma*dta
@@ -25,13 +30,10 @@ run_model_new <- function(df_loaded){
     betas  <- rnorm(nsamples,mean=beta_mn, sd=beta_sd)
     gammas <- rnorm(nsamples,mean=gamma_mn,sd=gamma_sd)
 
-    #dt <- data.table::data.table(beta=betas,gamma=gammas,dco2=dco2,dta=dta)
-    #dt[, chcarb := model(beta,gamma,dco2,dta)]
-    df=data.frame(beta=betas,gamma=gammas,dco2=dco2,dta=dta)
-    chcarb=model(beta=df$beta,gamma=df$gamma,dco2=df$dco2,dta=df$dta)
-    df=cbind(df,chcarb)
+    df     = data.frame(beta=betas,gamma=gammas,dco2=dco2,dta=dta)
+    chcarb = model(beta=df$beta,gamma=df$gamma,dco2=df$dco2,dta=df$dta)
+    df     = cbind(df,chcarb)
 
-    #return(as.data.frame(dt))
     return(df)
   }
 
@@ -71,29 +73,30 @@ run_model_new <- function(df_loaded){
 
     return(data.frame(beta_mn=mean_beta,beta_sd=std_beta,gamma_mn=mean_gamma,gamma_sd=std_gamma))
   }
-  library(data.table)
-  yrstart = '2010'
-  yrend   = '2090'
+
+  # yrstart = '2010'
+  # yrend   = '2090'
+
+  yrstart <- yrstart
+  yrend <- yrend
   rcp     = 'RCP6.0'
+  nsamples = 10000
 
   cat("start year:", yrstart, "end year:", yrend, "\n")
   cat("rcp scenario:", rcp, "\n")
 
-  #dtco2    = data.table::fread("data-raw/files/AR5-RCP-CO2.tsv")
-  #dttemp   = data.table::fread("data-raw/files/AR5-RCP-TAS-50.csv",skip=1)
-  #dco2_s = as.numeric(dtco2[Year == yrstart, ..rcp])
-  #dco2_e = as.numeric(dtco2[Year == yrend, ..rcp])
-  dco2_s = 389.1
-  dco2_e = 635.6
+  dtco2    = read.table("data-raw/files/AR5-RCP-CO2.tsv",header=TRUE,sep="\t")
+  dttemp   = read.csv("data-raw/files/AR5-RCP-TAS-50.csv",skip=1)
 
+  dco2_s = dtco2[dtco2$Year == yrstart,rcp]
+  dco2_e = dtco2[dtco2$Year == yrend  ,rcp]
   rco2 = dco2_e/dco2_s
   dco2 = dco2_e-dco2_s
 
-  #dta  <- as.numeric(dttemp[Year == yrend,..rcp] - dttemp[Year == yrstart,..rcp])
-  dta  <- 2.0314 - 0.3591
+  dta  <- dttemp[dttemp$Year == yrend,rcp] - dttemp[dttemp$Year == yrstart,rcp]
 
   param <- calc_betagamma(n = rco2)
-  soil = chcarb(nsamples = 10000,
+  soil = chcarb(nsamples = nsamples,
                 beta_mn  = param$beta_mn,   beta_sd = param$beta_sd,
                 gamma_mn = param$gamma_mn, gamma_sd = param$gamma_sd,
                 dco2 = dco2, dta = dta)
@@ -111,5 +114,14 @@ run_model_new <- function(df_loaded){
   ch_soilcarb = soil$chcarb * (mulunit/divunit)
   #summary(ch_soilcarb)
 
-  return(ch_soilcarb)
+  # read in site data
+  #model_result <- soccatoa::example_output
+
+  # soil carbon model in stan written by Dave Miller
+  # this is a place holder
+  soilCarb <- 50*rnorm(nsamples,mean=1.0,sd=0.1)
+
+  soilCarb - ch_soilcarb
+
+  return(soilCarb)
 }

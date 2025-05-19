@@ -79,6 +79,7 @@ mod_upload_ui <- function(id){
                bslib::card(height = 350,
                            bslib::card_body(
                              class = "p-0",
+                             uiOutput(ns("survey")),
                              leaflet::leafletOutput(ns("map"))
                              )
                            )
@@ -145,19 +146,15 @@ mod_upload_server <- function(id, rv, x){
       loaded_data <- readr::read_csv(input$upload$datapath, show_col_types = FALSE)
       check_cols <- colnames(loaded_data)
 
-      required_cols <- c("survey", "site", "site_id", "easting", "northing", "year", "land_use", "land_use_sub", "z")
+      required_cols <- c("survey", "lon", "lat", "year", "land_use", "land_use_sub", "z")
 
 
       if ( all(required_cols  %in% check_cols)){
 
         #save the loaded data
         rv$my_data <-
-          dplyr::filter(loaded_data,
-                        survey == unique(loaded_data$survey)[1], # take a survey -- will have to decide what to do
-                        year == unique(loaded_data$year)[1], #for now
-                        z == 0.55) %>% #for now
-          sf::st_as_sf(coords = c("easting", "northing"), crs = 27700)%>%
-          sf::st_transform(crs = 4326)
+          loaded_data %>%
+          sf::st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
         #show th  cards
         rv_local$file_status <- "right"
@@ -205,9 +202,26 @@ mod_upload_server <- function(id, rv, x){
         file.copy("/data/notebooks/rstudio-madtigsoccatoa/soccatoa/inst/app/www/downloadables/example_format_soccatoa.pdf", file)
       })
 
-    output$map <- leaflet::renderLeaflet({
+
+    output$survey <- renderUI({
       if(isTruthy(rv$my_data)){
-        numPal <- leaflet::colorNumeric('viridis', rv$my_data$S_cz)
+        selectizeInput(ns("survey_picker"), label = "surveys found", choices = unique(rv$my_data$survey), selected = unique(rv$my_data$survey))
+      }else{
+        return(NULL)
+      }
+
+    })
+
+
+    output$map <- leaflet::renderLeaflet({
+      if(isTruthy(rv$my_data) && isTruthy(input$survey_picker)){
+
+        data <-
+          rv$my_data%>%
+          dplyr::filter(survey %in% input$survey_picker)%>%
+          dplyr::select (geometry, loc_id)%>%
+          unique()
+
         leaflet::leaflet() %>%
           htmlwidgets::onRender("function(el, x) {this.zoomControl.setPosition('bottomright');}") %>%
           #the maps background
@@ -215,13 +229,16 @@ mod_upload_server <- function(id, rv, x){
           leaflet::addProviderTiles("OpenStreetMap.Mapnik", options = leaflet::providerTileOptions(zIndex=0, noWrap = TRUE), group = "Streets") %>%
           leaflet::addProviderTiles("Esri.WorldImagery", options = leaflet::providerTileOptions(zIndex=0, noWrap = TRUE), group = "Satellite")%>%
           leaflet::addLayersControl(baseGroups = c("Streets", "Satellite"), options = leaflet::layersControlOptions(collapsed = T, position = "topright")) %>%
-          leaflet::addCircleMarkers(data = rv$my_data,
+          leaflet::addCircleMarkers(data = data,
                                     radius = 4,
                                     color = "#292C2F",
                                     stroke = FALSE,
-                                    fillOpacity = 1)%>%
-          leaflet::addControl(html = "<h3 style='color: #292C2F; background: transparent; font-size: 18px; font-weight: bold; text-align: center;'>Locations Found</h3>",
-                              position = "topleft")
+                                    label = data$loc_id,
+                                    fillOpacity = 1)#%>%
+          # leaflet::addControl(html = "<h3 style='color: #292C2F; background: transparent; font-size: 18px; font-weight: bold; text-align: center;'>Locations Found</h3>",
+          #                     position = "topleft")
+      }else{
+        return(NULL)
       }
     })
 
@@ -233,14 +250,100 @@ mod_upload_server <- function(id, rv, x){
       )
     })
 
+    run_modal <- function(){
+      ns <- session$ns
+      modalDialog(
+        tagList(
+          h2("select data to run"),
+          p("survey"),
+          uiOutput(ns("survey_data")),
+          fluidRow(column(6,
+                          uiOutput(ns("year_start"))),
+                   column(6,
+                          uiOutput(ns("year_end")))
+          ),
+          actionButton(inputId = ns("run_model"), label = div(icon("computer", lib = "font-awesome"),
+                                                              "run"),
+                       width = "100%", style="margin-right: auto; font-size:100%;", class = "btn-run")
+        ),
+        size = "m",
+        easyClose = T,
+        footer = NULL,
+        style = "max-width: 500px; max-height: 90vh; overflow-y: hidden;"
+      )
+    }
 
     observeEvent(input$model_output, label = "model the results, and go to next page", {
 
-      #run model
-      rv$data_results <- soccatoa::run_model(rv$my_data)
+      output$survey_data <- renderUI({
+        selectizeInput(ns("survey_filter"),
+                       label = "survey to run",
+                       choices = c(unique(rv$my_data$survey)),
+                       selected = c(unique(rv$my_data$survey)),
+                       multiple = TRUE)
+      })
 
-      #show the result page
+      output$year_start <- renderUI({
+        if(isTruthy( input$survey_filter)){
+          data <- dplyr::filter(rv$my_data,
+                                survey %in% input$survey_filter)
+
+          selectizeInput(ns("year_start_filter"),
+                         label = "year start",
+                         choices = c(unique(data$year)),
+                         selected = min(unique(data$year))
+                         )
+        }else{
+          selectizeInput(ns("year_start_filter"),
+                         label = "year start",
+                         choices = c(unique(rv$my_data$year)),
+                         selected = c(min(rv$my_data$year)))
+        }
+      })
+
+      output$year_end <- renderUI({
+        if(isTruthy( input$survey_filter)){
+          data <- dplyr::filter(rv$my_data,
+                                survey %in% input$survey_filter)
+
+          selectizeInput(ns("year_end_filter"),
+                         label = "year end",
+                         choices = c(unique(data$year)),
+                         selected = max(unique(data$year))
+          )
+        }else{
+          selectizeInput(ns("year_end_filter"),
+                         label = "year end",
+                         choices = c(unique(rv$my_data$year)),
+                         selected = c(max(rv$my_data$year)))
+        }
+      })
+
+      showModal(run_modal())
+
+    })
+
+    observeEvent(input$run_model, label = "run the model",{
+
+      years <- c(as.numeric(input$year_start_filter),
+                 as.numeric(input$year_end_filter))
+
+      #run models
+      releavant_data <-
+        rv$my_data %>%
+        dplyr::filter(survey %in% input$survey_filter) %>%
+        dplyr::filter(year >= min(years) & year <= max(years))
+
+      rv$data_results <- soccatoa::run_model_A(df_loaded = releavant_data)
+
+      #rv$data_results_B <- soccatoa::run_model_B(df_loaded = releavant_data,
+                                                 #yrstart = as.character(min(years)),
+                                                 #yrend = as.character(max(years))
+                                                 #)
+
+      # #show the result page
       rv$page_showing <-"results"
+      removeModal()
     })
 
 
