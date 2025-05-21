@@ -70,28 +70,6 @@ mod_upload_ui <- function(id){
         )
       )
 
-
-    # #IF WRONG FILE LOADED
-    # conditionalPanel(
-    #   condition = "output.panelCondition_wrongfile",
-    #   ns = NS(id),
-    #   fluidRow(
-    #     column(12,
-    #            bslib::card(height = 200,
-    #                        bslib::card_body(
-    #                          p("The files you uploaded doesn't seem to have the right format", style = "text-align:justify;"),
-    #                          fluidRow(
-    #                            column(4,
-    #                                   offset = 4,
-    #                                   downloadButton(ns("download_format"), "Download example format", class = "btn-info", width = "100%", style = "font-size:100%" )
-    #                                   )
-    #                          )
-    #                          )
-    #                        )
-    #            )
-    #     )
-    # )
-
 #close
   )
 }
@@ -165,7 +143,28 @@ mod_upload_server <- function(id, rv, x){
                      downloadButton(ns("download_template"), "Download example template", class = "btn-info", width = "100%", style = "font-size:100%" )
                      )
               )
-            )
+            ),
+
+          #IF WRONG FILE LOADED
+          conditionalPanel(
+            condition = "output.panelCondition_wrongfile",
+            ns = NS(id),
+            fluidRow(
+              column(12,
+                     bslib::card(height = 200,
+                                 bslib::card_body(
+                                   p("The files you uploaded doesn't seem to have the right format", style = "text-align:justify;"),
+                                   fluidRow(
+                                     column(4,
+                                            offset = 4,
+                                            downloadButton(ns("download_format"), "Download example format", class = "btn-info", width = "100%", style = "font-size:100%" )
+                                            )
+                                   )
+                                   )
+                                 )
+                     )
+              )
+          )
 
         ),
         size = "xl",
@@ -213,20 +212,15 @@ mod_upload_server <- function(id, rv, x){
 
         save(all_data, file = paste0(rv$proj_directory, "data/all_data.rda"))
 
-        # #show th  cards
-        # rv_local$file_status <- "right"
-
         #select the site of the uploaded file to run
         rv_local$selected_sites <- c(data_to_save$site_id)
 
         #close the modal
         removeModal()
 
-      } #else {
-
-        # rv_local$file_status <- "wrong"
-
-     # }
+      } else {
+        rv_local$file_status <- "wrong"
+        }
     })
 
     output$select_from_db <- renderUI({
@@ -306,6 +300,11 @@ mod_upload_server <- function(id, rv, x){
       rv_local$file_status == "right"
     })
     outputOptions(output, "panelCondition_rightfile", suspendWhenHidden = FALSE)
+
+    output$panelCondition_wrongfile  <- reactive({
+      rv_local$file_status == "wrong"
+    })
+    outputOptions(output, "panelCondition_wrongfile", suspendWhenHidden = FALSE)
 
     output$download_documentation <- downloadHandler(
       filename = paste0("documentation_SOCCATOA", ".pdf", sep=""),
@@ -485,10 +484,7 @@ mod_upload_server <- function(id, rv, x){
     #
     # })
 
-    # output$panelCondition_wrongfile  <- reactive({
-    #   rv_local$file_status == "wrong"
-    # })
-    # outputOptions(output, "panelCondition_wrongfile", suspendWhenHidden = FALSE)
+
 
 
   #close
