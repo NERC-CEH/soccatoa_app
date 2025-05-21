@@ -14,23 +14,29 @@ mod_upload_ui <- function(id){
     fluidRow(
 
       column(8,
-                    fluidRow(column(9,
-                                    fileInput(ns("upload"),
-                                              label = NULL,
-                                              buttonLabel = "upload file",
-                                              accept = ".csv",
-                                              placeholder = "...",
-                                              width = "100%",
-                                              multiple = F)
-                                     ),
-                             column(3,
-                                    actionButton(ns("submit"),
-                                                 label = "submit",
-                                                 width = "100%",
-                                                 style = "margin-right: 0px; font-size:95%;",
-                                                 class = "btn-info")
-                                    )
-                             )
+             h3("Upload a file"),
+             fluidRow(column(9,
+
+                             fileInput(ns("upload"),
+                                       label = NULL,
+                                       buttonLabel = "upload file",
+                                       accept = ".csv",
+                                       placeholder = "...",
+                                       width = "100%",
+                                       multiple = F)
+             ),
+             column(3,
+                    actionButton(ns("submit"),
+                                 label = "submit",
+                                 width = "100%",
+                                 style = "margin-right: 0px; font-size:95%;",
+                                 class = "btn-info")
+             )
+             ),
+
+             h3("Or select sites from the existing database"),
+             uiOutput(ns("select_from_db"))
+
                     ),
       column(1,
                     conditionalPanel(
@@ -146,19 +152,41 @@ mod_upload_server <- function(id, rv, x){
       loaded_data <- readr::read_csv(input$upload$datapath, show_col_types = FALSE)
       check_cols <- colnames(loaded_data)
 
-      required_cols <- c("survey", "lon", "lat", "year", "land_use", "land_use_sub", "z")
+      required_cols <- c("survey", "site_id", "lon", "lat", "year", "z", "d", "rho_fe", "f_c", "S_cz")
 
 
       if ( all(required_cols  %in% check_cols)){
 
-        #save the loaded data
+        #save the loaded data for this run
         rv$my_data <-
           loaded_data %>%
           sf::st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
+        #save the loaded data into the system
+        load(paste0(rv$proj_directory, "data/all_data.rda"))
+
+        data_to_save <- data.frame("survey" = loaded_data$survey,
+                                   "site_id" = loaded_data$site_id,
+                                   "year" = loaded_data$year,
+                                   "lon" = loaded_data$lon,
+                                   "lat" = loaded_data$lat,
+                                   "z" = loaded_data$z,
+                                   "d" = loaded_data$d,
+                                   "rho_fe" = loaded_data$rho_fe,
+                                   "f_c" = loaded_data$f_c,
+                                   "S_cz" = loaded_data$S_cz,
+                                   "user" = rv$user)
+        all_data <- rbind(all_data, data_to_save)
+
+        all_data <- all_data %>%
+          dplyr::distinct(dplyr::across(-user), .keep_all = TRUE)
+
+        all_data <- janitor::remove_empty(all_data, which = "rows")
+
+        save(all_data, file = paste0(rv$proj_directory, "data/all_data.rda"))
+
         #show th  cards
         rv_local$file_status <- "right"
-
 
       } else {
 
@@ -186,20 +214,20 @@ mod_upload_server <- function(id, rv, x){
     output$download_documentation <- downloadHandler(
       filename = paste0("documentation_SOCCATOA", ".pdf", sep=""),
       content = function(file) {
-        file.copy("/data/notebooks/rstudio-madtigsoccatoa/soccatoa/inst/app/www/downloadables/documentation_facsimile.pdf", file)
+        file.copy(paste0(rv$proj_directory, "inst/app/www/downloadables/documentation_facsimile.pdf"), file)
       })
 
 
     output$download_format <- downloadHandler(
       filename = paste0("explanation_format_SOCCATOA", ".pdf", sep=""),
       content = function(file) {
-        file.copy("/data/notebooks/rstudio-madtigsoccatoa/soccatoa/inst/app/www/downloadables/example_format_soccatoa.pdf", file)
+        file.copy(paste0(rv$proj_directory, "inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
       })
 
     output$download_template <- downloadHandler(
       filename = paste0("explanation_format_SOCCATOA", ".pdf", sep=""),
       content = function(file) {
-        file.copy("/data/notebooks/rstudio-madtigsoccatoa/soccatoa/inst/app/www/downloadables/example_format_soccatoa.pdf", file)
+        file.copy(paste0(rv$proj_directory, "inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
       })
 
 
