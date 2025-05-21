@@ -27,6 +27,9 @@ app_server <- function(input, output, session) {
 
   rv$example_locations <- NULL
 
+
+  rv$all_data <- NULL
+
   ###########################
   ### the modules ###########
   ###########################
