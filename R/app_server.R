@@ -13,7 +13,11 @@ app_server <- function(input, output, session) {
 
   rv <- reactiveValues()
 
+  rv$proj_directory <- "./"
+  #rv$proj_directory <- "/data/notebooks/rstudio-madtigsoccatoa/soccatoa/" #when in datalabs
+
   rv$logged_in <- FALSE
+  rv$user <- NA
 
   rv$page_showing <- "logged_out"
 
@@ -22,6 +26,9 @@ app_server <- function(input, output, session) {
   rv$data_results_B <- NULL
 
   rv$example_locations <- NULL
+
+
+  rv$all_data <- NULL
 
   ###########################
   ### the modules ###########

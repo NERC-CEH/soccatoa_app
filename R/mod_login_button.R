@@ -79,6 +79,7 @@ mod_login_button_server <- function(id, rv, x){
         rv$page_showing <-"logged_out"
         #back to home
         updateNavlistPanel(session = x, inputId = "soccatoapage", selected = "Home") #go to login page
+        rv$user <- NA
 
       #IF YOU ARE LOGGED OUT LOGIN
       } else{
@@ -88,7 +89,7 @@ mod_login_button_server <- function(id, rv, x){
 
     observeEvent(input$login, label = "login", {
       #check username exists
-      load("/data/notebooks/rstudio-madtigsoccatoa/soccatoa/data/accounts.rda")
+      load(paste0(rv$proj_directory, "data/accounts.rda"))
 
       all_users <- accounts$username
 
@@ -117,6 +118,7 @@ mod_login_button_server <- function(id, rv, x){
           rv$logged_in <- TRUE
           updateNavlistPanel(session = session, inputId = "soccatoapage", selected = "Run Model")
           rv$page_showing <-"logged_in"
+          rv$user <- user_given
           # Close the modal after successful login
           removeModal()
 
@@ -174,7 +176,7 @@ mod_login_button_server <- function(id, rv, x){
           && input$use != "" && input$username_register != ""  && input$password_register != ""){
 
         #check username isn't already existing
-        load("/data/notebooks/rstudio-madtigsoccatoa/soccatoa/data/accounts.rda")
+        load(paste0(rv$proj_directory, "data/accounts.rda"))
 
         if(c(digest::digest(input$username_register, algo = "md5")) %in% accounts$username ){
           output$validating_newuser <- renderUI({
@@ -191,8 +193,9 @@ mod_login_button_server <- function(id, rv, x){
 
           accounts <- rbind(accounts, new_user)
 
-          print(accounts)
-          save(accounts, file = "/data/notebooks/rstudio-madtigsoccatoa/soccatoa/data/accounts.rda")
+          #print(accounts)
+
+          save(accounts, file = paste0(rv$proj_directory, "data/accounts.rda"))
 
           output$validating_newuser <- renderUI({
             p("Account created successfully", style = "color: #58BAC1;")
@@ -201,7 +204,7 @@ mod_login_button_server <- function(id, rv, x){
           rv$logged_in <- TRUE
           rv$page_showing <-"logged_in"
           updateNavlistPanel(session = session, inputId = "soccatoapage", selected = "Run Model")  # Go to the upload page
-
+          rv$user <- new_user$username
 
           removeModal()
 
