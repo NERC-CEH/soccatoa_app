@@ -14,7 +14,7 @@ app_server <- function(input, output, session) {
   rv <- reactiveValues()
 
   rv$proj_directory <- "./"
-  #rv$proj_directory <- "/data/notebooks/rstudio-madtigsoccatoa/soccatoa/" #when in datalabs
+  # rv$proj_directory <- "/data/notebooks/rstudio-madtigsoccatoa/soccatoa/" #when in datalabs
 
   rv$logged_in <- FALSE
   rv$user <- NA

@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_terms_privacy_ui <- function(id){
+mod_terms_privacy_ui <- function(id) {
   ns <- NS(id)
   tagList(
     h3("Terms of use & privacy policy"),
@@ -18,10 +18,9 @@ mod_terms_privacy_ui <- function(id){
 #' terms_privacy Server Functions
 #'
 #' @noRd
-mod_terms_privacy_server <- function(id, rv, x){
-  moduleServer( id,  session = x, function(input, output, session){
+mod_terms_privacy_server <- function(id, rv, x) {
+  moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
-
   })
 }
 

@@ -7,25 +7,22 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_feedback_ui <- function(id){
+mod_feedback_ui <- function(id) {
   ns <- NS(id)
   tagList(
-
     p(lorem::ipsum(2), style = "text-align:justify;"),
-    p(tagList(shiny::icon("envelope"), "Your e-mail@ceh.ac.uk"), style="font-weight: bold;"),
-
+    p(tagList(shiny::icon("envelope"), "Your e-mail@ceh.ac.uk"), style = "font-weight: bold;"),
   )
 }
 
 #' feedback Server Functions
 #'
 #' @noRd
-mod_feedback_server <- function(id, rv, x){
-  moduleServer( id, session = x, function(input, output, session){
+mod_feedback_server <- function(id, rv, x) {
+  moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
     ### package blastula to send e-mails
-
   })
 }
 

@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_faq_ui <- function(id){
+mod_faq_ui <- function(id) {
   ns <- NS(id)
   tagList(
     h3("Q1: how does the ....?", style = "text-align: justify;"),
@@ -28,10 +28,9 @@ mod_faq_ui <- function(id){
 #' faq Server Functions
 #'
 #' @noRd
-mod_faq_server <- function(id, rv, x){
-  moduleServer( id,  session = x, function(input, output, session){
+mod_faq_server <- function(id, rv, x) {
+  moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
-
   })
 }
 
