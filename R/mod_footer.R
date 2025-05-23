@@ -13,8 +13,7 @@ mod_footer_ui <- function(id) {
     div(
       class = "footer-logo-container",
       img(src = "https://www.ceh.ac.uk/sites/default/files/images/theme/ukceh_logo_long_720x170_rgb.png", id = "ukceh", alt = "UKCEH logo", style = "height: 40px;vertical-align:middle; padding-left:15px; padding-right:15px;"),
-      img(src = "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg", id = "apple", alt = "apple logo", style = "height: 40px;vertical-align:middle; padding-left:15px; padding-right:15px;"),
-      img(src = "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg", id = "microsoft", alt = "microsoft logo", style = "height: 40px;vertical-align:middle; padding-left:15px; padding-right:15px;")
+      img(src = "www/bioss.svg", id = "bioss", alt = "bioss logo", style = "height: 40px;vertical-align:middle; padding-left:15px; padding-right:15px;")
     )
 
     # close
@@ -24,8 +23,8 @@ mod_footer_ui <- function(id) {
 #' footer Server Functions
 #'
 #' @noRd
-mod_footer_server <- function(id) {
-  moduleServer(id, function(input, output, session) {
+mod_footer_server <- function(id, rv, x) {
+  moduleServer(id, session = x, function(input, output, session){
     ns <- session$ns
   })
 }

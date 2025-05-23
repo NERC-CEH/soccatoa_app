@@ -47,5 +47,5 @@ app_server <- function(input, output, session) {
   mod_terms_privacy_server("terms_privacy_1", rv = rv, x = session)
   mod_faq_server("faq_1", rv = rv, x = session)
 
-  mod_footer_server("footer_1")
+  mod_footer_server("footer_1", rv = rv, x = session)
 }
