@@ -58,18 +58,26 @@ app_ui <- function(request) {
       )
     ),
     # FAQ
-    bslib::nav_panel(title = "FAQs", mod_faq_ui("faq_1"),
-                     div(class = "footer", mod_footer_ui("footer_2"))),
+    bslib::nav_panel(
+      title = "FAQs", mod_faq_ui("faq_1"),
+      div(class = "footer", mod_footer_ui("footer_2"))
+    ),
     # CONTACT US
-    bslib::nav_panel(title = "Contact us", mod_feedback_ui("feedback_1"),
-                     div(class = "footer", mod_footer_ui("footer_4"))),
+    bslib::nav_panel(
+      title = "Contact us", mod_feedback_ui("feedback_1"),
+      div(class = "footer", mod_footer_ui("footer_4"))
+    ),
     # TERMS OF USE
-    bslib::nav_panel(title = "Terms & Privacy", mod_terms_privacy_ui("terms_privacy_1"),
-                     div(class = "footer", mod_footer_ui("footer_3"))),
+    bslib::nav_panel(
+      title = "Terms & Privacy", mod_terms_privacy_ui("terms_privacy_1"),
+      div(class = "footer", mod_footer_ui("footer_3"))
+    ),
     # login or logout
     bslib::nav_spacer(),
-    bslib::nav_panel(title = mod_auth_ui("auth_1"), mod_login_button_ui("login_button_1"),
-                     div(class = "footer", mod_footer_ui("footer_5"))),
+    bslib::nav_panel(
+      title = mod_auth_ui("auth_1"), mod_login_button_ui("login_button_1"),
+      div(class = "footer", mod_footer_ui("footer_5"))
+    ),
   )
 }
 

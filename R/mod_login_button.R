@@ -29,15 +29,14 @@ mod_login_button_ui <- function(id) {
           ns = NS(id),
           uiOutput(ns("welcome_user")),
           p(lorem::ipsum(2, 5))
-        ))
-      ),
-
+        )
+      )
+    ),
     fluidRow(
       column(4,
-             offset = 4,
-             uiOutput(ns("login_button")
-             )
-        )
+        offset = 4,
+        uiOutput(ns("login_button"))
+      )
     )
   )
 }
@@ -165,7 +164,7 @@ mod_login_button_server <- function(id, rv, x) {
           rv$user <- user_given
           rv_local$username_h <- input$username
 
-          #go to page
+          # go to page
           updateNavbarPage(session = x, inputId = "main_navbar", selected = "SOCCATOA")
 
           # Close the modal after successful login
@@ -246,7 +245,7 @@ mod_login_button_server <- function(id, rv, x) {
           rv$logged_in <- TRUE
           rv$page_showing <- "logged_in"
 
-          #go to page
+          # go to page
           updateNavbarPage(session = x, inputId = "main_navbar", selected = "SOCCATOA")
 
           rv$user <- new_user$username
