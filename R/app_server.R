@@ -32,6 +32,8 @@ app_server <- function(input, output, session) {
   ###########################
   mod_login_button_server("login_button_1", rv = rv, x = session)
 
+  mod_auth_server("auth_1", rv = rv, x = session)
+
   mod_header_server("header_1", rv = rv, x = session)
 
   mod_welcome_server("welcome_1", rv = rv, x = session)

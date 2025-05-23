@@ -76,9 +76,9 @@ body {
 .navlist-container .tab-content {
     padding-right: 20px; /* Add padding to the right */
     padding-left: 20px;
-    padding-top: 20px;
+    padding-top: 5px;
     padding-bottom: 20px;
-    height: calc(100vh - 100px); /* Ensures the tab content fills the height minus logos (50) #calc(100vh - 50px)*/
+    height: calc(100vh - 180px); /* Ensures the tab content fills the height minus logos (50) #calc(100vh - 50px)*/
     max-width: 100%;
     overflow-y: auto; /* Allows scrolling inside content */
     overflow-x: hidden;  /* don't allow horizontal scrolling */
@@ -288,85 +288,22 @@ body {
 }
 
 
-
-
-
-
-
-
-
-
-
 /*****************************/
-/* small screens */
+/*navbar */
 /*****************************/
-
-/* Responsive design adjustments for mobile and small screens */
-@media (max-width: 1000px) {
-    /* Make the entire page a flex container */
-    body, html {
-        display: flex !important;
-        flex-direction: column !important; /* Stack everything vertically */
-        height: 100vh !important;  /* Make the page fill the entire viewport */
-        margin: 0 !important;
-       overflow-y: auto !important; /* Allow scrolling inside tab-content */
-
-    }
-
-
- /* Ensure the navlist container grows properly */
-
-    .navlist-container .nav-stacked {
-        display: block;!important;  /* Stack the sidebar and content vertically on small screens */
-        height: auto;!important;     /* Let the container expand with content */
-    }
-
-    /* Ensure tab content takes up available space but not too much */
-    .navlist-container {
-        display: block !important;
-        height: auto;!important;
-    }
-
-    .navlist-container .tab-content {
-        padding-bottom: 10%; /* Height of the footer */
-    }
-
-    /* Make sure the footer is always visible */
-    .footer {
-       left: 0;
-       bottom: 0;
-       width: 100%;
-       height: 10%;
-       background-color: #fff;
-       text-align: center;
-    }
-
-    .btn-info, .btn-login, .btn-logout, .btn-danger {
-        width: 100% !important;        /* Make buttons stack on small screens */
-        margin-bottom: 10px;           /* Add space between stacked buttons */
-        max-width: 100%;               /* Prevents the button from being too wide */
-        white-space: nowrap;           /* Prevents the text from breaking into multiple lines */
-        overflow: hidden;              /* Hides any content that goes out of bounds */
-        text-overflow: ellipsis;       /* Shows an ellipsis when the text overflows */
-        padding: 8px 16px;             /* Adjust padding for smaller screens */
-    }
-
+.navbar-brand,
+.navbar-nav > li > a {
+  font-size: 20px; !important;
+  color: #0483A4;!important;
+}
+.navbar-nav > li > a:hover {
+  color: #0483A4 !important;
 }
 
-#map .navlist-container .tab-content {
-    padding-right: 0%;!important
-    padding-left: 0%;!important
-    padding-top: 0%;!important
-    padding-bottom: 0%;!important
+.navbar-nav .nav-link.active {
+  color: #0483A4 !important;
+  font-weight: bold;
 }
-
-#map .card-body {
-    padding-right: 0px;!important
-    padding-left: 0px;!important
-    padding-top: 0px;!important
-    padding-bottom: 0px;!importan
-}
-
 
 
 

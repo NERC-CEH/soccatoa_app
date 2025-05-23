@@ -12,9 +12,32 @@ mod_login_button_ui <- function(id) {
   tagList(
     fluidRow(
       column(
-        width = 12,
-        uiOutput(ns("login_button"))
-      )
+        width = 10,
+        offset = 1,
+
+        # if you are logged out, allow to login
+        conditionalPanel(
+          condition = "output.panelCondition_logged == false",
+          ns = NS(id),
+          h3("Login into your account or register a new one"),
+          p(lorem::ipsum(2, 5))
+        ),
+
+        # if you are logged in, allow to logout
+        conditionalPanel(
+          condition = "output.panelCondition_logged == true",
+          ns = NS(id),
+          uiOutput(ns("welcome_user")),
+          p(lorem::ipsum(2, 5))
+        ))
+      ),
+
+    fluidRow(
+      column(4,
+             offset = 4,
+             uiOutput(ns("login_button")
+             )
+        )
     )
   )
 }
@@ -25,6 +48,22 @@ mod_login_button_ui <- function(id) {
 mod_login_button_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
+
+    rv_local <- reactiveValues()
+    rv_local$username_h <- NULL
+
+    output$panelCondition_logged <- reactive({
+      rv$logged_in
+    })
+    outputOptions(output, "panelCondition_logged", suspendWhenHidden = FALSE)
+
+    #### welcome user
+    output$welcome_user <- renderUI({
+      if (rv$logged_in == TRUE) {
+        h3(paste0("Welcome, ", rv_local$username_h, ""))
+      }
+    })
+
 
     #### login or logout button
     output$login_button <- renderUI({
@@ -76,10 +115,12 @@ mod_login_button_server <- function(id, rv, x) {
       if (rv$logged_in == TRUE) {
         rv$logged_in <- FALSE
         rv$page_showing <- "logged_out"
-        # back to home
-        updateNavlistPanel(session = x, inputId = "soccatoapage", selected = "Home") # go to login page
-        rv$user <- NA
 
+        # back to home
+        updateNavbarPage(session = x, inputId = "main_navbar", selected = "SOCCATOA")
+
+        rv$user <- NA
+        rv_local$username_h <- NA
         # IF YOU ARE LOGGED OUT LOGIN
       } else {
         showModal(login_modal())
@@ -119,9 +160,14 @@ mod_login_button_server <- function(id, rv, x) {
 
           # If valid, proceed with logging in
           rv$logged_in <- TRUE
-          updateNavlistPanel(session = session, inputId = "soccatoapage", selected = "Run Model")
+
           rv$page_showing <- "logged_in"
           rv$user <- user_given
+          rv_local$username_h <- input$username
+
+          #go to page
+          updateNavbarPage(session = x, inputId = "main_navbar", selected = "SOCCATOA")
+
           # Close the modal after successful login
           removeModal()
         } else {
@@ -199,8 +245,12 @@ mod_login_button_server <- function(id, rv, x) {
 
           rv$logged_in <- TRUE
           rv$page_showing <- "logged_in"
-          updateNavlistPanel(session = session, inputId = "soccatoapage", selected = "Run Model") # Go to the upload page
+
+          #go to page
+          updateNavbarPage(session = x, inputId = "main_navbar", selected = "SOCCATOA")
+
           rv$user <- new_user$username
+          rv_local$username_h <- input$username_register
 
           removeModal()
         }

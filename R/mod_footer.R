@@ -24,7 +24,7 @@ mod_footer_ui <- function(id) {
 #'
 #' @noRd
 mod_footer_server <- function(id, rv, x) {
-  moduleServer(id, session = x, function(input, output, session){
+  moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
   })
 }
