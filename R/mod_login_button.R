@@ -88,7 +88,7 @@ mod_login_button_server <- function(id, rv, x) {
 
     observeEvent(input$login, label = "login", {
       # check username exists
-      load(paste0(rv$proj_directory, "data/accounts.rda"))
+      load(paste0(here::here(), "/data/accounts.rda"))
 
       all_users <- accounts$username
 
@@ -173,7 +173,7 @@ mod_login_button_server <- function(id, rv, x) {
       if (!is.null(input$username_register) && !is.null(input$password_register) &&
         input$use != "" && input$username_register != "" && input$password_register != "") {
         # check username isn't already existing
-        load(paste0(rv$proj_directory, "data/accounts.rda"))
+        load(paste0(here::here(), "/data/accounts.rda"))
 
         if (c(digest::digest(input$username_register, algo = "md5")) %in% accounts$username) {
           output$validating_newuser <- renderUI({
@@ -191,7 +191,7 @@ mod_login_button_server <- function(id, rv, x) {
 
           # print(accounts)
 
-          save(accounts, file = paste0(rv$proj_directory, "data/accounts.rda"))
+          save(accounts, file = paste0(here::here(), "/data/accounts.rda"))
 
           output$validating_newuser <- renderUI({
             p("Account created successfully", style = "color: #58BAC1;")

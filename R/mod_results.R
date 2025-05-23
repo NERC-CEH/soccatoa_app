@@ -224,7 +224,7 @@ mod_results_server <- function(id, rv, x) {
     output$download_documentation <- downloadHandler(
       filename = paste0("documentation_SOCCATOA", ".pdf", sep = ""),
       content = function(file) {
-        file.copy(paste0(rv$proj_directory, "inst/app/www/downloadables/documentation_facsimile.pdf"), file)
+        file.copy(paste0(here::here(), "/inst/app/www/downloadables/documentation_facsimile.pdf"), file)
       }
     )
 
@@ -241,7 +241,7 @@ mod_results_server <- function(id, rv, x) {
         # paste0("soccatoa_report", "_", stringr::str_replace_all(Sys.Date(), "-", "_"), ".pdf")
       },
       content = function(file) {
-        tempReport <- paste0(rv$proj_directory, "/inst/app/www/downloadables/example_report.Rmd")
+        tempReport <- paste0(here::here(), "/inst/app/www/downloadables/example_report.Rmd")
 
         params_list <- list(
           my_data = rv$my_data # Make sure this is correct for your reactive value
