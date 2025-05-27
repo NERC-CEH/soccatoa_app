@@ -201,7 +201,7 @@ mod_upload_server <- function(id, rv, x) {
 
       if (all(required_cols %in% check_cols)) {
         # save the loaded data into the system
-        load(paste0(here::here(), "/data/all_data.rda"))
+        load(here::here("data/all_data.rda"))
 
         data_to_save <- data.frame(
           "survey" = loaded_data$survey,
@@ -225,7 +225,7 @@ mod_upload_server <- function(id, rv, x) {
 
         rv$all_data <- all_data
 
-        save(all_data, file = paste0(here::here(), "/data/all_data.rda"))
+        save(all_data, file = here::here("data/all_data.rda"))
 
         # select the site of the uploaded file to run
         rv_local$selected_sites <- c(data_to_save$site_id)
@@ -239,7 +239,7 @@ mod_upload_server <- function(id, rv, x) {
 
     output$select_from_db <- renderUI({
       if (is.null(rv$all_data)) {
-        load(paste0(here::here(), "/data/all_data.rda"))
+        load(here::here("data/all_data.rda"))
 
         # clean in case it's en empty db (first submission)
         all_data <- janitor::remove_empty(all_data, which = "rows")
@@ -267,7 +267,7 @@ mod_upload_server <- function(id, rv, x) {
 
     observeEvent(rv_local$selected_sites, label = "when db is updated, automatically select the new data", {
       if (!is.null(rv_local$selected_sites)) {
-        load(paste0(here::here(), "/data/all_data.rda"))
+        load(here::here("data/all_data.rda"))
         updateSelectizeInput(session = session, inputId = "sites_picker", selected = sort(rv_local$selected_sites), choices = sort(all_data$site_id))
       }
     })
@@ -286,7 +286,7 @@ mod_upload_server <- function(id, rv, x) {
         })
 
         # load the data
-        load(paste0(here::here(), "/data/all_data.rda"))
+        load(here::here("data/all_data.rda"))
 
         rv$my_data <-
           all_data %>%
@@ -322,7 +322,8 @@ mod_upload_server <- function(id, rv, x) {
     output$download_documentation <- downloadHandler(
       filename = paste0("documentation_SOCCATOA", ".pdf", sep = ""),
       content = function(file) {
-        file.copy(paste0(here::here(), "/inst/app/www/downloadables/documentation_facsimile.pdf"), file)
+        file.copy(here::here(
+          "inst/app/www/downloadables/documentation_facsimile.pdf"), file)
       }
     )
 
@@ -330,14 +331,16 @@ mod_upload_server <- function(id, rv, x) {
     output$download_format <- downloadHandler(
       filename = paste0("explanation_format_SOCCATOA", ".pdf", sep = ""),
       content = function(file) {
-        file.copy(paste0(here::here(), "/inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
+        file.copy(here::here(
+          "inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
       }
     )
 
     output$download_template <- downloadHandler(
       filename = paste0("explanation_format_SOCCATOA", ".pdf", sep = ""),
       content = function(file) {
-        file.copy(paste0(here::here(), "/inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
+        file.copy(here::here(
+          "inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
       }
     )
 
