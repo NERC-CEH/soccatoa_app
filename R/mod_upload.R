@@ -7,78 +7,88 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_upload_ui <- function(id){
+mod_upload_ui <- function(id) {
   ns <- NS(id)
   tagList(
-
     fluidRow(
-
-      column(12,
-             h4("Select sites from the existing database or upload your dataset:")
-             ),
-
-      column(5,
-             uiOutput(ns("select_from_db"))),
-      column(3,
-             br(),
-             actionButton(ns("select_data"),
-                          label = "use these sites",
-                          width = "100%",
-                          class = "btn-info"),
-             uiOutput(ns("warning_no_sites"))
-             ),
-      column(3,
-             br(),
-             actionButton(ns("upload_data"),
-                          label = div(icon("database", lib = "font-awesome"), "upload your dataset"),
-                          width = "100%",
-                          class = "btn-upload"))
+      column(
+        12,
+        h4("Select sites from the existing database or upload your dataset:")
+      ),
+      column(
+        5,
+        uiOutput(ns("select_from_db"))
+      ),
+      column(
+        3,
+        br(),
+        actionButton(ns("select_data"),
+          label = "use these sites",
+          width = "100%",
+          class = "btn-info"
+        ),
+        uiOutput(ns("warning_no_sites"))
+      ),
+      column(
+        3,
+        br(),
+        actionButton(ns("upload_data"),
+          label = div(icon("database", lib = "font-awesome"), "upload your dataset"),
+          width = "100%",
+          class = "btn-upload"
+        )
+      )
     ),
 
-    #IF SITE_ID to run selected
+    # IF SITE_ID to run selected
     conditionalPanel(
       condition = "output.panelCondition_rightfile",
       ns = NS(id),
-
       fluidRow(
-        column(6,
-               bslib::navset_card_tab(
-                 header = NULL,
-                 footer = NULL,
-                 full_screen = TRUE,
-                 height = 450,
-                 bslib::nav_panel("Map",
-                                  leaflet::leafletOutput(ns("map"))
-                 ),
-                 bslib::nav_panel("Summary",
-                                  DT::DTOutput(ns("table_summary"))
-                 )
-                 )
-               ),
-        column(6,
-               bslib::card(height = 450,
-                           #class = "p-0",
-                           bslib::card_body(
-                             p(lorem::ipsum(1, 2), style = "text-align:justify;"),
-                             downloadButton(ns("download_documentation"), "Download documenntation", class = "btn-info", width = "100%", style = "font-size:100%" ),
-                             actionButton(ns("model_output"),
-                                          label = div(icon("computer", lib = "font-awesome"),"run"),
-                                          width = "100%", style="margin-right: auto; font-size:100%;", class = "btn-run")
-                             )
-                           )
-               )
+        column(
+          6,
+          bslib::navset_card_tab(
+            header = NULL,
+            footer = NULL,
+            full_screen = TRUE,
+            height = 450,
+            bslib::nav_panel(
+              "Map",
+              leaflet::leafletOutput(ns("map"))
+            ),
+            bslib::nav_panel(
+              "Summary",
+              DT::DTOutput(ns("table_summary"))
+            )
+          )
+        ),
+        column(
+          6,
+          bslib::card(
+            height = 450,
+            # class = "p-0",
+            bslib::card_body(
+              p(lorem::ipsum(1, 2), style = "text-align:justify;"),
+              downloadButton(ns("download_documentation"), "Download documenntation", class = "btn-info", width = "100%", style = "font-size:100%"),
+              actionButton(ns("model_output"),
+                label = div(icon("computer", lib = "font-awesome"), "run"),
+                width = "100%", style = "margin-right: auto; font-size:100%;", class = "btn-run"
+              )
+            )
+          )
         )
       )
+    )
 
-#close
+    # close
   )
 }
 
 #' upload Server Functions
 #
 #' @noRd
-mod_upload_server <- function(id, rv, x){
-  moduleServer( id,  session = x, function(input, output, session){
+mod_upload_server <- function(id, rv, x) {
+  moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
     rv_local <- reactiveValues()
@@ -87,85 +97,90 @@ mod_upload_server <- function(id, rv, x){
 
 
     output$wrong_format <- renderUI({
-      div(class = "icon-container", icon(name = 'remove-sign', lib = "glyphicon"))
+      div(class = "icon-container", icon(name = "remove-sign", lib = "glyphicon"))
     })
     output$right_format <- renderUI({
-      div(class = "icon-container", icon(name = 'ok', lib = "glyphicon"))
+      div(class = "icon-container", icon(name = "ok", lib = "glyphicon"))
     })
 
 
-    upload_dataset_modal <- function(){
+    upload_dataset_modal <- function() {
       ns <- session$ns
       modalDialog(
         tagList(
-
           h5("Upload your dataset in our database"),
           br(),
-
           fluidRow(
-            column(6,
-                   fileInput(ns("upload"),
-                             label = NULL,
-                             buttonLabel = "upload file",
-                             accept = ".csv",
-                             placeholder = "...",
-                             width = "100%",
-                             multiple = F)
-                   ),
-            column(3,
-                   actionButton(ns("submit"),
-                                label = "submit",
-                                width = "100%",
-                                style = "margin-right: 0px; font-size:95%;",
-                                class = "btn-info")
-                     ),
-            column(1,
-                   conditionalPanel(
-                     condition = "output.panelCondition_rightfile",
-                     ns = NS(id),
-                     uiOutput(ns("right_format"))
-                     ),
-                   conditionalPanel(
-                     condition = "output.panelCondition_wrongfile",
-                     ns = NS(id),
-                     uiOutput(ns("wrong_format"))
-                     )
-                   )
+            column(
+              6,
+              fileInput(ns("upload"),
+                label = NULL,
+                buttonLabel = "upload file",
+                accept = ".csv",
+                placeholder = "...",
+                width = "100%",
+                multiple = F
+              )
             ),
+            column(
+              3,
+              actionButton(ns("submit"),
+                label = "submit",
+                width = "100%",
+                style = "margin-right: 0px; font-size:95%;",
+                class = "btn-info"
+              )
+            ),
+            column(
+              1,
+              conditionalPanel(
+                condition = "output.panelCondition_rightfile",
+                ns = NS(id),
+                uiOutput(ns("right_format"))
+              ),
+              conditionalPanel(
+                condition = "output.panelCondition_wrongfile",
+                ns = NS(id),
+                uiOutput(ns("wrong_format"))
+              )
+            )
+          ),
 
-          #IF NO FILE LOADED
+          # IF NO FILE LOADED
           conditionalPanel(
             condition = "output.panelCondition_nofile",
             ns = NS(id),
             p("Information on the type of data that is accepted:"),
             fluidRow(
-              column(4,
-                     downloadButton(ns("download_template"), "Download example template", class = "btn-info", width = "100%", style = "font-size:100%" )
-                     )
+              column(
+                4,
+                downloadButton(ns("download_template"), "Download example template", class = "btn-info", width = "100%", style = "font-size:100%")
               )
-            ),
+            )
+          ),
 
-          #IF WRONG FILE LOADED
+          # IF WRONG FILE LOADED
           conditionalPanel(
             condition = "output.panelCondition_wrongfile",
             ns = NS(id),
             fluidRow(
-              column(12,
-                     bslib::card(height = 200,
-                                 bslib::card_body(
-                                   p("The files you uploaded doesn't seem to have the right format", style = "text-align:justify;"),
-                                   fluidRow(
-                                     column(4,
-                                            offset = 4,
-                                            downloadButton(ns("download_format"), "Download example format", class = "btn-info", width = "100%", style = "font-size:100%" )
-                                            )
-                                   )
-                                   )
-                                 )
-                     )
+              column(
+                12,
+                bslib::card(
+                  height = 200,
+                  bslib::card_body(
+                    p("The files you uploaded doesn't seem to have the right format", style = "text-align:justify;"),
+                    fluidRow(
+                      column(4,
+                        offset = 4,
+                        downloadButton(ns("download_format"), "Download example format", class = "btn-info", width = "100%", style = "font-size:100%")
+                      )
+                    )
+                  )
+                )
               )
+            )
           )
-
         ),
         size = "xl",
         easyClose = T,
@@ -177,30 +192,30 @@ mod_upload_server <- function(id, rv, x){
       showModal(upload_dataset_modal())
     })
 
-    observeEvent(input$submit, ignoreInit = T, label = "when uploaded file update rv",{
-
-      #check document fits the requirements
+    observeEvent(input$submit, ignoreInit = T, label = "when uploaded file update rv", {
+      # check document fits the requirements
       loaded_data <- readr::read_csv(input$upload$datapath, show_col_types = FALSE)
       check_cols <- colnames(loaded_data)
 
       required_cols <- c("survey", "site_id", "lon", "lat", "year", "z", "d", "rho_fe", "f_c", "S_cz")
 
-      if ( all(required_cols  %in% check_cols)){
+      if (all(required_cols %in% check_cols)) {
+        # save the loaded data into the system
+        load(here::here("data/all_data.rda"))
 
-        #save the loaded data into the system
-        load(paste0(rv$proj_directory, "data/all_data.rda"))
-
-        data_to_save <- data.frame("survey" = loaded_data$survey,
-                                   "site_id" = loaded_data$site_id,
-                                   "year" = loaded_data$year,
-                                   "lon" = loaded_data$lon,
-                                   "lat" = loaded_data$lat,
-                                   "z" = loaded_data$z,
-                                   "d" = loaded_data$d,
-                                   "rho_fe" = loaded_data$rho_fe,
-                                   "f_c" = loaded_data$f_c,
-                                   "S_cz" = loaded_data$S_cz,
-                                   "user" = rv$user)
+        data_to_save <- data.frame(
+          "survey" = loaded_data$survey,
+          "site_id" = loaded_data$site_id,
+          "year" = loaded_data$year,
+          "lon" = loaded_data$lon,
+          "lat" = loaded_data$lat,
+          "z" = loaded_data$z,
+          "d" = loaded_data$d,
+          "rho_fe" = loaded_data$rho_fe,
+          "f_c" = loaded_data$f_c,
+          "S_cz" = loaded_data$S_cz,
+          "user" = rv$user
+        )
         all_data <- rbind(all_data, data_to_save)
 
         all_data <- all_data %>%
@@ -210,224 +225,235 @@ mod_upload_server <- function(id, rv, x){
 
         rv$all_data <- all_data
 
-        save(all_data, file = paste0(rv$proj_directory, "data/all_data.rda"))
+        save(all_data, file = here::here("data/all_data.rda"))
 
-        #select the site of the uploaded file to run
+        # select the site of the uploaded file to run
         rv_local$selected_sites <- c(data_to_save$site_id)
 
-        #close the modal
+        # close the modal
         removeModal()
-
       } else {
         rv_local$file_status <- "wrong"
-        }
+      }
     })
 
     output$select_from_db <- renderUI({
+      if (is.null(rv$all_data)) {
+        load(here::here("data/all_data.rda"))
 
-      if(is.null(rv$all_data)){
-        load(paste0(rv$proj_directory, "data/all_data.rda"))
-
-        #clean in case it's en empty db (first submission)
+        # clean in case it's en empty db (first submission)
         all_data <- janitor::remove_empty(all_data, which = "rows")
-
       }
 
-      if(nrow(all_data) > 0){
-
+      if (nrow(all_data) > 0) {
         return(
           list(
-            selectizeInput(ns("sites_picker"), label = "Sites available in the database:",
-                           choices = sort(unique(all_data$site_id)),  multiple = TRUE, width = "100%")
+            selectizeInput(ns("sites_picker"),
+              label = "Sites available in the database:",
+              choices = sort(unique(all_data$site_id)), multiple = TRUE, width = "100%"
+            )
           )
         )
-
-      }else{
+      } else {
         return(list(
-          selectizeInput(ns("sites_picker"), label = "Sites available in the database:",
-                         choices = NULL,  multiple = TRUE, width = "80%"),
+          selectizeInput(ns("sites_picker"),
+            label = "Sites available in the database:",
+            choices = NULL, multiple = TRUE, width = "80%"
+          ),
           p("The database seems empty at the moment, please upload your dataset", style = "text-align:justify;")
-          )
-        )
+        ))
       }
     })
 
     observeEvent(rv_local$selected_sites, label = "when db is updated, automatically select the new data", {
-
-       if(!is.null(rv_local$selected_sites)){
-        load(paste0(rv$proj_directory, "data/all_data.rda"))
+      if (!is.null(rv_local$selected_sites)) {
+        load(here::here("data/all_data.rda"))
         updateSelectizeInput(session = session, inputId = "sites_picker", selected = sort(rv_local$selected_sites), choices = sort(all_data$site_id))
-       }
-
+      }
     })
 
     observeEvent(input$select_data, label = "when selected which sites to run update rv", {
-
-      if(is.null(input$sites_picker)){
+      if (is.null(input$sites_picker)) {
         rv_local$file_status <- "none"
-        #display why it is not doing anything
-        output$warning_no_sites <- renderUI({ return(p("no sites selected; must select at least one to proceed")) })
+        # display why it is not doing anything
+        output$warning_no_sites <- renderUI({
+          return(p("no sites selected; must select at least one to proceed"))
+        })
+      } else {
+        # remove warning (if it was there)
+        output$warning_no_sites <- renderUI({
+          return(NULL)
+        })
 
-      }else{
-        #remove warning (if it was there)
-        output$warning_no_sites <- renderUI({ return(NULL) })
-
-        #load the data
-        load(paste0(rv$proj_directory, "data/all_data.rda"))
+        # load the data
+        load(here::here("data/all_data.rda"))
 
         rv$my_data <-
           all_data %>%
-          dplyr::filter(site_id %in% input$sites_picker)%>%
+          dplyr::filter(site_id %in% input$sites_picker) %>%
           sf::st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
         rv_local$file_status <- "right"
-
       }
-
     })
 
     observeEvent(input$sites_picker, label = "remove warning and reset if a selection is made", {
-      output$warning_no_sites <- renderUI({ return(NULL) })
+      output$warning_no_sites <- renderUI({
+        return(NULL)
+      })
       rv_local$file_status <- "none"
     })
 
-    output$panelCondition_nofile  <- reactive({
+    output$panelCondition_nofile <- reactive({
       rv_local$file_status == "none"
     })
     outputOptions(output, "panelCondition_nofile", suspendWhenHidden = FALSE)
 
-    output$panelCondition_rightfile  <- reactive({
+    output$panelCondition_rightfile <- reactive({
       rv_local$file_status == "right"
     })
     outputOptions(output, "panelCondition_rightfile", suspendWhenHidden = FALSE)
 
-    output$panelCondition_wrongfile  <- reactive({
+    output$panelCondition_wrongfile <- reactive({
       rv_local$file_status == "wrong"
     })
     outputOptions(output, "panelCondition_wrongfile", suspendWhenHidden = FALSE)
 
     output$download_documentation <- downloadHandler(
-      filename = paste0("documentation_SOCCATOA", ".pdf", sep=""),
+      filename = paste0("documentation_SOCCATOA", ".pdf", sep = ""),
       content = function(file) {
-        file.copy(paste0(rv$proj_directory, "inst/app/www/downloadables/documentation_facsimile.pdf"), file)
-      })
+        file.copy(here::here(
+          "inst/app/www/downloadables/documentation_facsimile.pdf"), file)
+      }
+    )
 
 
     output$download_format <- downloadHandler(
-      filename = paste0("explanation_format_SOCCATOA", ".pdf", sep=""),
+      filename = paste0("explanation_format_SOCCATOA", ".pdf", sep = ""),
       content = function(file) {
-        file.copy(paste0(rv$proj_directory, "inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
-      })
+        file.copy(here::here(
+          "inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
+      }
+    )
 
     output$download_template <- downloadHandler(
-      filename = paste0("explanation_format_SOCCATOA", ".pdf", sep=""),
+      filename = paste0("explanation_format_SOCCATOA", ".pdf", sep = ""),
       content = function(file) {
-        file.copy(paste0(rv$proj_directory, "inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
-      })
+        file.copy(here::here(
+          "inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
+      }
+    )
 
     output$map <- leaflet::renderLeaflet({
-      if(isTruthy(rv$my_data)){
-
-        #clean the data to use on map
+      if (isTruthy(rv$my_data)) {
+        # clean the data to use on map
         data <-
           rv$my_data %>%
-          dplyr::select (survey, site_id, year, z, d, rho_fe, f_c, S_cz, geometry)%>%
+          dplyr::select(survey, site_id, year, z, d, rho_fe, f_c, S_cz, geometry) %>%
           dplyr::group_by(site_id, geometry) %>%
-          dplyr::summarise(year = if (min(year) == max(year)) { as.character(min(year)) } else { paste0(min(year), " - ", max(year))},
-                           survey = paste(unique(survey), collapse = ", "),
-                           z = paste(round(z, 2), collapse = ", "),
-                           d = paste(round(d, 2), collapse = ", "),
-                           rho_fe = paste(round(rho_fe, 2), collapse = ", "),
-                           f_c = paste(round(f_c, 2), collapse = ", "),
-                           S_cz = paste(round(S_cz, 2), collapse = ", "),
-                           .groups = "drop"
-                           )
+          dplyr::summarise(
+            year = if (min(year) == max(year)) {
+              as.character(min(year))
+            } else {
+              paste0(min(year), " - ", max(year))
+            },
+            survey = paste(unique(survey), collapse = ", "),
+            z = paste(round(z, 2), collapse = ", "),
+            d = paste(round(d, 2), collapse = ", "),
+            rho_fe = paste(round(rho_fe, 2), collapse = ", "),
+            f_c = paste(round(f_c, 2), collapse = ", "),
+            S_cz = paste(round(S_cz, 2), collapse = ", "),
+            .groups = "drop"
+          )
 
         # palette
         colors <- rep(c("#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"),
-                         length.out = length(unique(data$site_id)))
+          length.out = length(unique(data$site_id))
+        )
         site_palette <- leaflet::colorFactor(palette = colors, domain = data$site_id)
 
-        #Map
+        # Map
         leaflet::leaflet() %>%
           htmlwidgets::onRender("function(el, x) {this.zoomControl.setPosition('bottomright');}") %>%
-          #the maps background
-          leaflet::addProviderTiles("Esri.WorldImagery", group="Esri.WorldImagery",options = leaflet::providerTileOptions(zIndex=0, noWrap = TRUE)) %>%
-          leaflet::addProviderTiles("OpenStreetMap.Mapnik", options = leaflet::providerTileOptions(zIndex=0, noWrap = TRUE), group = "Streets") %>%
-          leaflet::addProviderTiles("Esri.WorldImagery", options = leaflet::providerTileOptions(zIndex=0, noWrap = TRUE), group = "Satellite")%>%
+          # the maps background
+          leaflet::addProviderTiles("Esri.WorldImagery", group = "Esri.WorldImagery", options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE)) %>%
+          leaflet::addProviderTiles("OpenStreetMap.Mapnik", options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE), group = "Streets") %>%
+          leaflet::addProviderTiles("Esri.WorldImagery", options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE), group = "Satellite") %>%
           leaflet::addLayersControl(baseGroups = c("Streets", "Satellite"), options = leaflet::layersControlOptions(collapsed = T, position = "topright")) %>%
-
-          #add the markers of the dataset to run
-          leaflet::addCircleMarkers(data = data,
-                                    radius = 6,
-                                    color = ~site_palette(site_id),
-                                    stroke = FALSE,
-                                    popup = ~paste0(
-                                      "<b>Survey:</b> ", survey, "<br>",
-                                      "<b>Site ID:</b> ", site_id, "<br>",
-                                      "<b>Year:</b> ", year, "<br>",
-                                      "<b>z:</b> ", z, "<br>",
-                                      "<b>d:</b> ", d, "<br>",
-                                      "<b>&rho;_fe:</b> ", rho_fe, "<br>",
-                                      "<b>f_c:</b> ", f_c, "<br>",
-                                      "<b>S_cz:</b> ", S_cz
-                                    ),
-                                    fillOpacity = 1)#%>%
-          # leaflet::addControl(html = "<h3 style='color: #292C2F; background: transparent; font-size: 18px; font-weight: bold; text-align: center;'>Locations Found</h3>",
-          #                     position = "topleft")
-      }else{
+          # add the markers of the dataset to run
+          leaflet::addCircleMarkers(
+            data = data,
+            radius = 6,
+            color = ~ site_palette(site_id),
+            stroke = FALSE,
+            popup = ~ paste0(
+              "<b>Survey:</b> ", survey, "<br>",
+              "<b>Site ID:</b> ", site_id, "<br>",
+              "<b>Year:</b> ", year, "<br>",
+              "<b>z:</b> ", z, "<br>",
+              "<b>d:</b> ", d, "<br>",
+              "<b>&rho;_fe:</b> ", rho_fe, "<br>",
+              "<b>f_c:</b> ", f_c, "<br>",
+              "<b>S_cz:</b> ", S_cz
+            ),
+            fillOpacity = 1
+          ) # %>%
+        # leaflet::addControl(html = "<h3 style='color: #292C2F; background: transparent; font-size: 18px; font-weight: bold; text-align: center;'>Locations Found</h3>",
+        #                     position = "topleft")
+      } else {
         return(NULL)
       }
     })
 
-    output$format_description <- renderUI ({
-      bslib::card(height = 500,
-                  bslib::card_body(
-                    p(lorem::ipsum(5,3), style = "text-align:justify;")
-                  )
+    output$format_description <- renderUI({
+      bslib::card(
+        height = 500,
+        bslib::card_body(
+          p(lorem::ipsum(5, 3), style = "text-align:justify;")
+        )
       )
     })
 
     output$table_summary <- DT::renderDataTable({
-      if(isTruthy(rv$my_data)){
-
+      if (isTruthy(rv$my_data)) {
         data_df <- rv$my_data %>%
-          dplyr::bind_cols(sf::st_coordinates(rv$my_data)) %>%  # Extract longitude and latitude
-          dplyr::rename(lon = X, lat = Y)%>% # Rename columns to 'lon' and 'lat'
-          sf::st_drop_geometry()%>%  # Drop the geometry column
+          dplyr::bind_cols(sf::st_coordinates(rv$my_data)) %>% # Extract longitude and latitude
+          dplyr::rename(lon = X, lat = Y) %>% # Rename columns to 'lon' and 'lat'
+          sf::st_drop_geometry() %>% # Drop the geometry column
           dplyr::select(site_id, survey, year, lon, lat, z, d, rho_fe, f_c, S_cz)
 
         DT::datatable(data_df,
-                      options = list(
-                        pageLength = 10,
-                        searching = TRUE)
-                      )
-
-      }else{
+          options = list(
+            pageLength = 10,
+            searching = TRUE
+          )
+        )
+      } else {
         return(NULL)
       }
     })
 
     ############## RUN #############
 
-    run_modal <- function(){
+    run_modal <- function() {
       ns <- session$ns
       modalDialog(
         tagList(
-
           h2("select years to run"),
-
-          fluidRow(column(4,
-                          offset = 2,
-                          uiOutput(ns("year_start"))),
-                   column(4,
-                          uiOutput(ns("year_end")))
+          fluidRow(
+            column(4,
+              offset = 2,
+              uiOutput(ns("year_start"))
+            ),
+            column(
+              4,
+              uiOutput(ns("year_end"))
+            )
           ),
           fluidRow(column(8,
-                          offset = 2,
-                          actionButton(inputId = ns("run_model"), label = div(icon("computer", lib = "font-awesome"), "run"), width = "100%", style="margin-right: auto; font-size:100%;", class = "btn-run")
-                          )
-                   )
+            offset = 2,
+            actionButton(inputId = ns("run_model"), label = div(icon("computer", lib = "font-awesome"), "run"), width = "100%", style = "margin-right: auto; font-size:100%;", class = "btn-run")
+          ))
         ),
         size = "l",
         easyClose = T,
@@ -436,16 +462,18 @@ mod_upload_server <- function(id, rv, x){
     }
 
     output$year_start <- renderUI({
-      selectizeInput(ns("year_start_filter"), label = "year start", width = "100%",
-                     choices = c(unique(rv$my_data$year)),
-                     selected = min(unique(rv$my_data$year))
+      selectizeInput(ns("year_start_filter"),
+        label = "year start", width = "100%",
+        choices = c(unique(rv$my_data$year)),
+        selected = min(unique(rv$my_data$year))
       )
     })
 
     output$year_end <- renderUI({
-      selectizeInput(ns("year_end_filter"), label = "year end", width = "100%",
-                     choices = c(unique(rv$my_data$year)),
-                     selected = c(max(rv$my_data$year))
+      selectizeInput(ns("year_end_filter"),
+        label = "year end", width = "100%",
+        choices = c(unique(rv$my_data$year)),
+        selected = c(max(rv$my_data$year))
       )
     })
 
@@ -453,25 +481,26 @@ mod_upload_server <- function(id, rv, x){
       showModal(run_modal())
     })
 
-    observeEvent(input$run_model, label = "run the model",{
+    observeEvent(input$run_model, label = "run the model", {
+      years <- c(
+        as.numeric(input$year_start_filter),
+        as.numeric(input$year_end_filter)
+      )
 
-      years <- c(as.numeric(input$year_start_filter),
-                 as.numeric(input$year_end_filter))
-
-      #run models
+      # run models
       releavant_data <-
         rv$my_data %>%
         dplyr::filter(year >= min(years) & year <= max(years))
 
       rv$data_results <- soccatoa::run_model_A(df_loaded = releavant_data)
 
-      #rv$data_results_B <- soccatoa::run_model_B(df_loaded = releavant_data,
-                                                 #yrstart = as.character(min(years)),
-                                                 #yrend = as.character(max(years))
-                                                 #)
+      # rv$data_results_B <- soccatoa::run_model_B(df_loaded = releavant_data,
+      # yrstart = as.character(min(years)),
+      # yrend = as.character(max(years))
+      # )
 
       # #show the result page
-      rv$page_showing <-"results"
+      rv$page_showing <- "results"
       removeModal()
     })
 
@@ -487,7 +516,7 @@ mod_upload_server <- function(id, rv, x){
 
 
 
-  #close
+    # close
   })
 }
 

@@ -11,28 +11,28 @@ mod_run_model_ui <- function(id) {
   ns <- NS(id)
   tagList(
 
-    #IF LOGGED OUT
+    # IF LOGGED OUT
     conditionalPanel(
       condition = "output.panelCondition_logged_out",
       ns = NS(id),
       h3("SOCCATOA"),
       div(
         img(src = "www/example.jpg", class = "wrapped-image"),
-        div(class = "text-content",
-            p(lorem::ipsum(5, 7))
+        div(
+          class = "text-content",
+          p(lorem::ipsum(5, 7))
         )
       )
-
     ),
 
-    #IF LOGGED IN
+    # IF LOGGED IN
     conditionalPanel(
       condition = "output.panelCondition_logged_in",
       ns = NS(id),
       mod_upload_ui("upload_1")
     ),
 
-    #IF FILE LOADED
+    # IF FILE LOADED
     conditionalPanel(
       condition = "output.panelCondition_rusults",
       ns = NS(id),
@@ -44,26 +44,26 @@ mod_run_model_ui <- function(id) {
 #' run_model Server Functions
 #'
 #' @noRd
-mod_run_model_server <- function(id, rv, x){
-  moduleServer(id, session = x, function(input, output, session){
+mod_run_model_server <- function(id, rv, x) {
+  moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
-    output$panelCondition_logged_out  <- reactive({
+    output$panelCondition_logged_out <- reactive({
       rv$page_showing == "logged_out"
     })
     outputOptions(output, "panelCondition_logged_out", suspendWhenHidden = FALSE)
 
-    output$panelCondition_logged_in  <- reactive({
+    output$panelCondition_logged_in <- reactive({
       rv$page_showing == "logged_in"
     })
     outputOptions(output, "panelCondition_logged_in", suspendWhenHidden = FALSE)
 
-    output$panelCondition_rusults  <- reactive({
-      rv$page_showing =="results"
+    output$panelCondition_rusults <- reactive({
+      rv$page_showing == "results"
     })
     outputOptions(output, "panelCondition_rusults", suspendWhenHidden = FALSE)
 
-#close
+    # close
   })
 }
 

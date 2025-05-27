@@ -13,9 +13,6 @@ app_server <- function(input, output, session) {
 
   rv <- reactiveValues()
 
-  rv$proj_directory <- "./"
-  #rv$proj_directory <- "/data/notebooks/rstudio-madtigsoccatoa/soccatoa/" #when in datalabs
-
   rv$logged_in <- FALSE
   rv$user <- NA
 
@@ -35,6 +32,8 @@ app_server <- function(input, output, session) {
   ###########################
   mod_login_button_server("login_button_1", rv = rv, x = session)
 
+  mod_auth_server("auth_1", rv = rv, x = session)
+
   mod_header_server("header_1", rv = rv, x = session)
 
   mod_welcome_server("welcome_1", rv = rv, x = session)
@@ -47,5 +46,5 @@ app_server <- function(input, output, session) {
   mod_terms_privacy_server("terms_privacy_1", rv = rv, x = session)
   mod_faq_server("faq_1", rv = rv, x = session)
 
-  mod_footer_server("footer_1")
+  mod_footer_server("footer_1", rv = rv, x = session)
 }
