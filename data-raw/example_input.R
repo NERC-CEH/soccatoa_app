@@ -1,5 +1,5 @@
 ##### TEST INPUT #########
-dt_soilc <- readr::read_csv("/data/notebooks/rstudio-madtigsoccatoa/soccatoa/data-raw/files/dt_soilc.csv")
+dt_soilc <- readr::read_csv(here::here("data-raw/files/dt_soilc.csv"))
 
 
 # Define the function
@@ -59,7 +59,7 @@ dt_soilc_converted <- dplyr::filter(
 
 
 write.csv(dt_soilc_converted,
-  file = "/data/notebooks/rstudio-madtigsoccatoa/soccatoa/data-raw/files/soccatoa_input_2.csv",
+  file = here::here("data-raw/files/soccatoa_input_2.csv"),
   row.names = FALSE
 )
 
