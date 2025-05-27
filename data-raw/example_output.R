@@ -1,6 +1,6 @@
 ## code to prepare `example_output` dataset goes here
 
-dt_soilc <- readr::read_csv("/data/notebooks/rstudio-madtigsoccatoa/soccatoa/data-raw/files/dt_soilc.csv")
+dt_soilc <- readr::read_csv(here::here("data-raw/files/dt_soilc.csv"))
 dt_soilc <- dplyr::filter(
   dt_soilc,
   survey == "Easter Bush",
