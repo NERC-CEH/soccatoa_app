@@ -41,10 +41,9 @@ app_server <- function(input, output, session) {
   mod_run_model_server("run_model_1", rv = rv, x = session)
 
   mod_upload_server("upload_1", rv = rv, x = session)
+  mod_modal_upload_server("modal_upload_1", rv = rv, x = session)
   mod_results_server("results_1", rv = rv, x = session)
   mod_feedback_server("feedback_1", rv = rv, x = session)
   mod_terms_privacy_server("terms_privacy_1", rv = rv, x = session)
   mod_faq_server("faq_1", rv = rv, x = session)
-
-  mod_footer_server("footer_1", rv = rv, x = session)
 }

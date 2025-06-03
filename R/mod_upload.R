@@ -94,93 +94,35 @@ mod_upload_server <- function(id, rv, x) {
     rv_local <- reactiveValues()
     rv_local$file_status <- "none"
     rv_local$selected_sites <- NULL
+    rv_local$loaded_data <- NULL
+    rv_local$df <- NULL
 
-
-    output$wrong_format <- renderUI({
-      div(class = "icon-container", icon(name = "remove-sign", lib = "glyphicon"))
+    output$panelCondition_nofile <- reactive({
+      rv_local$file_status == "none"
     })
-    output$right_format <- renderUI({
-      div(class = "icon-container", icon(name = "ok", lib = "glyphicon"))
-    })
+    outputOptions(output, "panelCondition_nofile", suspendWhenHidden = FALSE)
 
+    output$panelCondition_rightfile <- reactive({
+      rv_local$file_status == "right"
+    })
+    outputOptions(output, "panelCondition_rightfile", suspendWhenHidden = FALSE)
+
+    output$panelCondition_wrongfile <- reactive({
+      rv_local$file_status == "wrong"
+    })
+    outputOptions(output, "panelCondition_wrongfile", suspendWhenHidden = FALSE)
+
+
+
+    #######################################################
+    ############ optional step: uploading your own data ###
+    #######################################################
 
     upload_dataset_modal <- function() {
       ns <- session$ns
       modalDialog(
         tagList(
-          h5("Upload your dataset in our database"),
-          br(),
-          fluidRow(
-            column(
-              6,
-              fileInput(ns("upload"),
-                label = NULL,
-                buttonLabel = "upload file",
-                accept = ".csv",
-                placeholder = "...",
-                width = "100%",
-                multiple = F
-              )
-            ),
-            column(
-              3,
-              actionButton(ns("submit"),
-                label = "submit",
-                width = "100%",
-                style = "margin-right: 0px; font-size:95%;",
-                class = "btn-info"
-              )
-            ),
-            column(
-              1,
-              conditionalPanel(
-                condition = "output.panelCondition_rightfile",
-                ns = NS(id),
-                uiOutput(ns("right_format"))
-              ),
-              conditionalPanel(
-                condition = "output.panelCondition_wrongfile",
-                ns = NS(id),
-                uiOutput(ns("wrong_format"))
-              )
-            )
-          ),
-
-          # IF NO FILE LOADED
-          conditionalPanel(
-            condition = "output.panelCondition_nofile",
-            ns = NS(id),
-            p("Information on the type of data that is accepted:"),
-            fluidRow(
-              column(
-                4,
-                downloadButton(ns("download_template"), "Download example template", class = "btn-info", width = "100%", style = "font-size:100%")
-              )
-            )
-          ),
-
-          # IF WRONG FILE LOADED
-          conditionalPanel(
-            condition = "output.panelCondition_wrongfile",
-            ns = NS(id),
-            fluidRow(
-              column(
-                12,
-                bslib::card(
-                  height = 200,
-                  bslib::card_body(
-                    p("The files you uploaded doesn't seem to have the right format", style = "text-align:justify;"),
-                    fluidRow(
-                      column(4,
-                        offset = 4,
-                        downloadButton(ns("download_format"), "Download example format", class = "btn-info", width = "100%", style = "font-size:100%")
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
+          mod_modal_upload_ui("modal_upload_1")
         ),
         size = "xl",
         easyClose = T,
@@ -192,50 +134,9 @@ mod_upload_server <- function(id, rv, x) {
       showModal(upload_dataset_modal())
     })
 
-    observeEvent(input$submit, ignoreInit = T, label = "when uploaded file update rv", {
-      # check document fits the requirements
-      loaded_data <- readr::read_csv(input$upload$datapath, show_col_types = FALSE)
-      check_cols <- colnames(loaded_data)
-
-      required_cols <- c("survey", "site_id", "lon", "lat", "year", "z", "d", "rho_fe", "f_c", "S_cz")
-
-      if (all(required_cols %in% check_cols)) {
-        # save the loaded data into the system
-        load(here::here("data/all_data.rda"))
-
-        data_to_save <- data.frame(
-          "survey" = loaded_data$survey,
-          "site_id" = loaded_data$site_id,
-          "year" = loaded_data$year,
-          "lon" = loaded_data$lon,
-          "lat" = loaded_data$lat,
-          "z" = loaded_data$z,
-          "d" = loaded_data$d,
-          "rho_fe" = loaded_data$rho_fe,
-          "f_c" = loaded_data$f_c,
-          "S_cz" = loaded_data$S_cz,
-          "user" = rv$user
-        )
-        all_data <- rbind(all_data, data_to_save)
-
-        all_data <- all_data %>%
-          dplyr::distinct(dplyr::across(-user), .keep_all = TRUE)
-
-        all_data <- janitor::remove_empty(all_data, which = "rows")
-
-        rv$all_data <- all_data
-
-        save(all_data, file = here::here("data/all_data.rda"))
-
-        # select the site of the uploaded file to run
-        rv_local$selected_sites <- c(data_to_save$site_id)
-
-        # close the modal
-        removeModal()
-      } else {
-        rv_local$file_status <- "wrong"
-      }
-    })
+    #######################################################
+    ############ when sites to run are selected ###########
+    #######################################################
 
     output$select_from_db <- renderUI({
       if (is.null(rv$all_data)) {
@@ -262,13 +163,6 @@ mod_upload_server <- function(id, rv, x) {
           ),
           p("The database seems empty at the moment, please upload your dataset", style = "text-align:justify;")
         ))
-      }
-    })
-
-    observeEvent(rv_local$selected_sites, label = "when db is updated, automatically select the new data", {
-      if (!is.null(rv_local$selected_sites)) {
-        load(here::here("data/all_data.rda"))
-        updateSelectizeInput(session = session, inputId = "sites_picker", selected = sort(rv_local$selected_sites), choices = sort(all_data$site_id))
       }
     })
 
@@ -304,45 +198,6 @@ mod_upload_server <- function(id, rv, x) {
       rv_local$file_status <- "none"
     })
 
-    output$panelCondition_nofile <- reactive({
-      rv_local$file_status == "none"
-    })
-    outputOptions(output, "panelCondition_nofile", suspendWhenHidden = FALSE)
-
-    output$panelCondition_rightfile <- reactive({
-      rv_local$file_status == "right"
-    })
-    outputOptions(output, "panelCondition_rightfile", suspendWhenHidden = FALSE)
-
-    output$panelCondition_wrongfile <- reactive({
-      rv_local$file_status == "wrong"
-    })
-    outputOptions(output, "panelCondition_wrongfile", suspendWhenHidden = FALSE)
-
-    output$download_documentation <- downloadHandler(
-      filename = paste0("documentation_SOCCATOA", ".pdf", sep = ""),
-      content = function(file) {
-        file.copy(here::here(
-          "inst/app/www/downloadables/documentation_facsimile.pdf"), file)
-      }
-    )
-
-
-    output$download_format <- downloadHandler(
-      filename = paste0("explanation_format_SOCCATOA", ".pdf", sep = ""),
-      content = function(file) {
-        file.copy(here::here(
-          "inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
-      }
-    )
-
-    output$download_template <- downloadHandler(
-      filename = paste0("explanation_format_SOCCATOA", ".pdf", sep = ""),
-      content = function(file) {
-        file.copy(here::here(
-          "inst/app/www/downloadables/example_format_soccatoa.pdf"), file)
-      }
-    )
 
     output$map <- leaflet::renderLeaflet({
       if (isTruthy(rv$my_data)) {
@@ -433,7 +288,9 @@ mod_upload_server <- function(id, rv, x) {
       }
     })
 
-    ############## RUN #############
+    #######################################################
+    ############ Running the model ########################
+    #######################################################
 
     run_modal <- function() {
       ns <- session$ns
@@ -504,17 +361,37 @@ mod_upload_server <- function(id, rv, x) {
       removeModal()
     })
 
-    # output$survey <- renderUI({
-    #   if(isTruthy(rv$my_data)){
-    #     selectizeInput(ns("survey_picker"), label = "surveys found", choices = unique(rv$my_data$survey), selected = unique(rv$my_data$survey))
-    #   }else{
-    #     return(NULL)
-    #   }
-    #
-    # })
+    #######################################################
+    ############ downloading handles ######################
+    #######################################################
+
+    output$download_documentation <- downloadHandler(
+      filename = paste0("documentation_SOCCATOA", ".pdf", sep = ""),
+      content = function(file) {
+        file.copy(here::here(
+          "inst/app/www/downloadables/documentation_facsimile.pdf"
+        ), file)
+      }
+    )
 
 
+    output$download_format <- downloadHandler(
+      filename = paste0("explanation_format_SOCCATOA", ".pdf", sep = ""),
+      content = function(file) {
+        file.copy(here::here(
+          "inst/app/www/downloadables/example_format_soccatoa.pdf"
+        ), file)
+      }
+    )
 
+    output$download_template <- downloadHandler(
+      filename = paste0("explanation_format_SOCCATOA", ".pdf", sep = ""),
+      content = function(file) {
+        file.copy(here::here(
+          "inst/app/www/downloadables/example_format_soccatoa.pdf"
+        ), file)
+      }
+    )
 
     # close
   })

@@ -122,7 +122,7 @@ run_model_B <- function(df_loaded, yrstart, yrend) {
   # this is a place holder
   soilCarb <- 50 * rnorm(nsamples, mean = 1.0, sd = 0.1)
 
-  soilCarb = soilCarb - ch_soilcarb
+  soilCarb <- soilCarb - ch_soilcarb
 
   return(soilCarb)
 }
