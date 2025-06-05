@@ -40,7 +40,7 @@ app_server <- function(input, output, session) {
 
   mod_run_model_server("run_model_1", rv = rv, x = session)
 
-  mod_upload_server("upload_1", rv = rv, x = session)
+  mod_select_sites_server("select_sites_1", rv = rv, x = session)
   mod_modal_upload_server("modal_upload_1", rv = rv, x = session)
   mod_results_server("results_1", rv = rv, x = session)
   mod_feedback_server("feedback_1", rv = rv, x = session)

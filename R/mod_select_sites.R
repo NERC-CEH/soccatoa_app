@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_upload_ui <- function(id) {
+mod_select_sites_ui <- function(id) {
   ns <- NS(id)
   tagList(
     fluidRow(
@@ -87,7 +87,7 @@ mod_upload_ui <- function(id) {
 #' upload Server Functions
 #
 #' @noRd
-mod_upload_server <- function(id, rv, x) {
+mod_select_sites_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
@@ -400,7 +400,7 @@ mod_upload_server <- function(id, rv, x) {
 
 
 ## To be copied in the UI
-# mod_upload_ui("upload_1")
+# mod_select_sites_ui("select_sites_1")
 
 ## To be copied in the server
-# mod_upload_server("upload_1")
+# mod_select_sites_server("select_sites_1")

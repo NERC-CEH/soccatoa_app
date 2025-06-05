@@ -29,7 +29,7 @@ mod_run_model_ui <- function(id) {
     conditionalPanel(
       condition = "output.panelCondition_logged_in",
       ns = NS(id),
-      mod_upload_ui("upload_1")
+      mod_select_sites_ui("select_sites_1")
     ),
 
     # IF FILE LOADED
