@@ -98,12 +98,11 @@ mod_modal_upload_ui <- function(id) {
                 column(10,
                   offset = 1,
 
-                  #place
+                  # place
                   h4("About the location of your sites..."),
                   radioButtons(ns("location_type"), label = "What type of location is indicated in your dataset?", choices = c("Lat/y and Lon/x" = "lon_lat", "geometry" = "geom"), selected = "lon_lat", inline = TRUE),
                   radioButtons(ns("location_proj"), label = "What type of projection is your dataset using?", choices = c("WGS84", "BNG"), selected = "WGS84", inline = TRUE),
                   p("If you are not sure, please check the documentation of your dataset or contact the data provider."),
-
                   conditionalPanel(
                     condition = "input.location_type == 'lon_lat'",
                     ns = NS(id),
@@ -112,28 +111,30 @@ mod_modal_upload_ui <- function(id) {
                   conditionalPanel(
                     condition = "input.location_type == 'geom'",
                     ns = NS(id),
-                    uiOutput(ns("col_geom"))
+                    p("not worked on this yet", style = "color: red;")
+                    # uiOutput(ns("col_geom"))
                   ),
 
-                  #time
+                  # time
                   h4("About the time dimension of the dataset..."),
-                  radioButtons(ns("time_type"), label = "How is the timing of your dataset indicated?", choices = c("Data format (YY/MM/DD or similar)" = "format_date",
-                                                                                                                    "day column, month column and or year column" = "split_date"), selected = "split_date", inline = TRUE),
+                  radioButtons(ns("time_type"), label = "How is the timing of your dataset indicated?", choices = c(
+                    "Data format (YY/MM/DD or similar)" = "format_date",
+                    "day column, month column and or year column" = "split_date"
+                  ), selected = "split_date", inline = TRUE),
                   p("At leas one time dimension must be present in your dataset (i.e., the year), others are optional."),
-
                   conditionalPanel(
                     condition = "input.time_type == 'format_date'",
                     ns = NS(id),
-                    uiOutput(ns("col_date_format"))
+                    p("not worked on this yet", style = "color: red;")
+                    # uiOutput(ns("col_date_format"))
                   ),
-
                   conditionalPanel(
                     condition = "input.time_type == 'split_date'",
                     ns = NS(id),
                     uiOutput(ns("col_date_split"))
                   ),
 
-                  #next
+                  # next
                   div(
                     style = "text-align: right;",
                     actionButton(ns("submit_date_and_time"), label = "next", width = "50%", style = "margin-right: 0px; font-size:95%;", class = "btn-info")
@@ -161,6 +162,7 @@ mod_modal_upload_ui <- function(id) {
               fluidRow(
                 column(10,
                   offset = 1,
+                  h3("Terms & Conditions - understands what happens to your data..."),
                   p(lorem::ipsum(10, 4))
                 )
               )
@@ -169,6 +171,7 @@ mod_modal_upload_ui <- function(id) {
         )
       ),
       checkboxInput(ns("acceptCheckbox"), "I accept the terms and conditions"),
+      uiOutput(ns("privacy_text")),
       actionButton(ns("submit_to_db"), label = "submit to database", width = "50%", style = "margin-right: 0px; font-size:95%;", class = "btn-info")
     )
     # CLOSE MODULE
@@ -186,6 +189,8 @@ mod_modal_upload_server <- function(id, rv, x) {
     rv_local$file_status <- "none"
     rv_local$loaded_data <- NULL
     rv_local$df <- NULL
+    rv_local$to_load <- NULL
+
 
     # to show the conditional panel of the columns reassignment
     output$panelCondition_checkingfile <- reactive({
@@ -199,7 +204,7 @@ mod_modal_upload_server <- function(id, rv, x) {
     })
     outputOptions(output, "panelCondition_checkingfile_2", suspendWhenHidden = FALSE)
 
-    #to show the accept and upload
+    # to show the accept and upload
     output$panelCondition_rightfile <- reactive({
       rv_local$file_status == "right"
     })
@@ -271,73 +276,83 @@ mod_modal_upload_server <- function(id, rv, x) {
     })
 
     observeEvent(input$dropdown_values, label = "check the values inserted by the user make sense, if so move to the next info; or show error", {
-      # check that the columns selected by the user "make sense"
-      expected_numeric <- c(
-        input$dropdown_values$select_z, input$dropdown_values$select_d, input$dropdown_values$select_rho_fe,
-        input$dropdown_values$select_f_c, input$dropdown_values$select_S_cz
+      my_columns <- list(
+        survey = input$dropdown_values$select_survey,
+        site_id = input$dropdown_values$select_site_id,
+        z = input$dropdown_values$select_z,
+        d = input$dropdown_values$select_d,
+        rho_fe = input$dropdown_values$select_rho_fe,
+        f_c = input$dropdown_values$select_f_c,
+        S_cz = input$dropdown_values$select_S_cz
       )
-      expected_numeric <- expected_numeric[expected_numeric != "absent"]
 
-      expected_character <- c(input$dropdown_values$select_survey, input$dropdown_values$select_site_id)
-      expected_character <- expected_numeric[expected_character != "absent"]
+      # absent to NA
+      my_columns <- lapply(my_columns, function(x) {
+        if (identical(x, "absent")) NA else x
+      })
 
-      numeric_check <- all(sapply(rv_local$loaded_data[, expected_numeric, drop = FALSE], function(x) {
-        suppressWarnings(!any(is.na(as.numeric(as.character(x))) & !is.na(x)))
-      }))
-      character_check <- all(sapply(rv_local$loaded_data[, expected_character], function(x) {
-        all(is.na(x) | is.character(as.character(x)))
-      }))
+      # if not NA check they are in the right format
+      if (all(!is.na(c(my_columns$z, my_columns$d, my_columns$rho_fe, my_columns$f_c, my_columns$S_cz, my_columns$site_id)))) {
+        # check that the columns selected by the user "make sense"
+        expected_numeric <- c(my_columns$z, my_columns$d, my_columns$rho_fe, my_columns$f_c, my_columns$S_cz)
+        expected_character <- c(my_columns$site_id)
 
-      # check that the columns NEEDE are selcted
-      expected_present <- c(input$dropdown_values$select_site_id,
-                            input$dropdown_values$select_z, input$dropdown_values$select_d, input$dropdown_values$select_rho_fe,
-                            input$dropdown_values$select_f_c, input$dropdown_values$select_S_cz)
-      present_check <- all(expected_present != "absent")
+        numeric_check <- all(sapply(rv_local$loaded_data[, expected_numeric, drop = FALSE], function(x) {
+          suppressWarnings(!any(is.na(as.numeric(as.character(x))) & !is.na(x)))
+        }))
+        character_check <- all(sapply(rv_local$loaded_data[, expected_character], function(x) {
+          all(is.na(x) | is.character(as.character(x)))
+        }))
 
-      if (numeric_check && character_check && present_check) {
-        # adjust to unit (T.B.D.)
+        # if right format
+        if (numeric_check && character_check) {
+          # adjust to unit (T.B.D.)
 
-        # rename the columns
-        for (dropdown_name in names(input$dropdown_values)) {
-          if (grepl("unit", dropdown_name)) next # skip unit fields
+          # # rename the columns
 
-          old_col <- input$dropdown_values[[dropdown_name]] # e.g. "survey_xyz"
-          new_col <- sub("^select_", "", dropdown_name) # e.g. "survey"
-          used_old_cols <- NULL
-          if (old_col %in% names(rv_local$loaded_data)) {
-            # Duplicate the column under new name
-            rv_local$loaded_data[[new_col]] <- rv_local$loaded_data[[old_col]]
+          output_cols <- c("survey", "site_id", "z", "d", "rho_fe", "f_c", "S_cz")
 
-            # Remember the source column for later removal
-            used_old_cols <- c(used_old_cols, old_col)
+          df_selected <- data.frame(row.names = seq_len(nrow(rv_local$loaded_data)))
+
+          for (colname in output_cols) {
+            input_col <- my_columns[[colname]]
+
+            if (is.na(input_col)) {
+              # Assign a column of NAs — automatically fills to correct length
+              df_selected[[colname]] <- NA
+            } else {
+              # Assign the appropriate column from the dataset
+              df_selected[[colname]] <- rv_local$loaded_data[[input_col]]
+            }
           }
+
+          rv_local$to_load <- df_selected
+
+          # do not display an error message
+          output$format_error <- renderUI({
+            return(NULL)
+          }) # no error
+
+          # go to next checking step
+          rv_local$file_status <- "checking_2"
+        } else {
+          # display error text
+          error_txt <- c()
+
+          if (!numeric_check) {
+            error_txt <- c(error_txt, "Some numeric values are not in the format we expected")
+          }
+
+          if (!character_check) {
+            error_txt <- c(error_txt, "Some character values are not in the format we expected")
+          }
+
+          output$format_error <- renderUI({
+            return(p(paste(error_txt, collapse = " & "), style = "color: red;"))
+          })
         }
-        # remove old columns
-        rv_local$loaded_data <- rv_local$loaded_data[, !(names(rv_local$loaded_data) %in% unique(used_old_cols)), drop = FALSE]
-
-        # do not display an error message
-        output$format_error <- renderUI({
-          return(NULL)
-        }) # no error
-
-        # go to next checking step
-        rv_local$file_status <- "checking_2"
       } else {
-
-        #display error text
-        error_txt <- c()
-
-        if (!numeric_check) {
-          error_txt <- c(error_txt, "Some numeric values are not in the format we expected")
-        }
-
-        if (!character_check) {
-          error_txt <- c(error_txt, "Some character values are not in the format we expected")
-        }
-
-        if(!present_check) {
-          error_txt <- c(error_txt, "Some columns that we need are not present in your data")
-        }
+        error_txt <- c("Some columns that we need are not present in your data")
         output$format_error <- renderUI({
           return(p(paste(error_txt, collapse = " & "), style = "color: red;"))
         })
@@ -347,13 +362,16 @@ mod_modal_upload_server <- function(id, rv, x) {
     #### step 2: check time and place ###
     output$col_lon_lat <- renderUI({
       list(
-        fluidRow(column(3,
-                        selectInput(ns("col_lon"), "Column with lon/X", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
-                        ),
-                 column(3,
-                        selectInput(ns("col_lat"), "Column with lat/Y",  choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
-                        )
-                 )
+        fluidRow(
+          column(
+            3,
+            selectInput(ns("col_lon"), "Column with lon/X", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+          ),
+          column(
+            3,
+            selectInput(ns("col_lat"), "Column with lat/Y", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+          )
+        )
       )
     })
 
@@ -363,211 +381,189 @@ mod_modal_upload_server <- function(id, rv, x) {
 
     output$col_date_split <- renderUI({
       list(
-        fluidRow(column(3,
-                        selectInput(ns("col_day"), "Column with day", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
-                        ),
-                 column(3,
-                        selectInput(ns("col_month"), "Column with month", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
-                        ),
-                 column(3,
-                        selectInput(ns("col_year"), "Column with year", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
-                        )
-                 )
+        fluidRow(
+          # column(
+          #   3,
+          #   selectInput(ns("col_day"), "Column with day", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+          # ),
+          # column(
+          #   3,
+          #   selectInput(ns("col_month"), "Column with month", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+          # ),
+          column(
+            3,
+            selectInput(ns("col_year"), "Column with year", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+          )
+        )
       )
     })
 
     output$col_date_format <- renderUI({
       list(
-        fluidRow(column(3,
-                        selectInput(ns("col_date"), "Column with the date", choices = c("absent" = "",
-                                                                                        colnames(rv_local$loaded_data)), selected = "")
-                        ),
-                 column(3,
-                        selectInput(ns("col_date_format"), "Format of the date", choices = c("1969-01-28" = "%Y-%m-%d",
-                                                                                             "28/01/1969" = "%d/%m/%Y",
-                                                                                             "28/01/69" = "%d/%m/%y",
-                                                                                             "01/28/69" = "%m/%d/%Y",
-                                                                                             "28-Jan-1969" ="%d-%b-%Y",
-                                                                                             "28-Jan-69" = "%d-%b-%y",
-                                                                                             "Jan-28-1969" = "%b-%d-%Y"
-                                                                                             ), selected = "%d/%m/%Y")
-                        )
-                 )
+        fluidRow(
+          column(
+            3,
+            selectInput(ns("col_date"), "Column with the date", choices = c(
+              "absent" = "",
+              colnames(rv_local$loaded_data)
+            ), selected = "")
+          ),
+          column(
+            3,
+            selectInput(ns("col_date_format"), "Format of the date", choices = c(
+              "1969-01-28" = "%Y-%m-%d",
+              "28/01/1969" = "%d/%m/%Y",
+              "28/01/69" = "%d/%m/%y",
+              "01/28/69" = "%m/%d/%Y",
+              "28-Jan-1969" = "%d-%b-%Y",
+              "28-Jan-69" = "%d-%b-%y",
+              "Jan-28-1969" = "%b-%d-%Y"
+            ), selected = "%d/%m/%Y")
+          )
+        )
       )
     })
 
     observeEvent(input$submit_date_and_time, label = "check the values inserted by the user make sense, if so move to the next info; or show error", {
 
-      # check that the columns selected by the user "make sense"
-      if(input$location_type == "lon_lat") {
-        expected_numeric_1 <- c(input$col_lon, input$col_lat)
-      } else {
-        expected_numeric_1 <-c(input$col_geom)
-      }
+      the_columns <- list(
+        lon = input$col_lon,
+        lat = input$col_lat,
+        geom = input$col_geom,
+        year = input$col_year,
+        date = input$col_date
+      )
 
-      if (input$time_type == "split_date") {
-        expected_numeric_2 <-  c(input$col_year)
-      } else if (input$time_type == "format_date") {
-        expected_numeric_2 <-  c(input$col_date)
-      }
+      # absents to NA
+      the_columns <- lapply(the_columns, function(x) {
+        if (identical(x, "")) NA else x
+      })
+      the_columns <- lapply(the_columns, function(x) {
+        if (is.null(x)) NA else x
+      })
 
-      expected_numeric <- c(expected_numeric_1, expected_numeric_2) [c(expected_numeric_1, expected_numeric_2) != ""]
-
-      numeric_check <- all(sapply(rv_local$loaded_data[, expected_numeric, drop = FALSE], function(x) {
-        suppressWarnings(!any(is.na(as.numeric(as.character(x))) & !is.na(x)))
-      }))
-
-
-      # check that the columns NEEDE are selcted
+      # check the right one are present
       if (input$location_type == "lon_lat") {
-        expected_present_1 <- c(input$col_lon, input$col_lat)
-      } else {
-        expected_present_1 <- c(input$col_geom)
+        check_present <- all(!is.na(c(the_columns$lon, the_columns$lat)))
+      }else{
+        check_present <- !is.na(the_columns$geom)
       }
 
       if (input$time_type == "split_date") {
-        expected_present_2 <- c(input$col_year)
-      } else if (input$time_type == "format_date") {
-        expected_present_2 <- c(input$col_date)
+        check_present <- check_present && !is.na(the_columns$year)
+      } else {
+        check_present <- check_present && !is.na(the_columns$date)
       }
 
-      expected_present <- c(expected_present_1, expected_present_2)
-      present_check <- all(expected_present != "")
+      # check that the columns selected by the user "make sense"
+      if (check_present){
 
-      if (numeric_check && present_check) {
-
-        # adjust dat to match db
+        #numeric
         if (input$location_type == "lon_lat") {
-          #transform to wgs84
-          # rename the columns
-          names(rv_local$loaded_data)[names(rv_local$loaded_data) == input$col_lon] <- "lon"
-          names(rv_local$loaded_data)[names(rv_local$loaded_data) == input$col_lat] <- "lat"
+          expected_numeric <- c(the_columns$lon, the_columns$lat)
         } else {
-          #set geometry  to wgs84 and split it
+          expected_numeric <- c(the_columns$geom)
         }
 
-        output$format_error_date_and_time <- renderUI({
-          return(NULL)
-        })
-        # go to next checking step
-        rv_local$file_status <- "right"
+        if (input$time_type == "split_date") {
+          expected_numeric <- c(expected_numeric, the_columns$col_year)
+        } else {
+          expected_numeric <- c(expected_numeric, the_columns$col_date)
+        }
 
+        numeric_check <- all(sapply(rv_local$loaded_data[, expected_numeric, drop = FALSE], function(x) {
+          suppressWarnings(!any(is.na(as.numeric(as.character(x))) & !is.na(x)))
+        }))
+
+        if(numeric_check){
+
+          #right format
+          ##### adjust dat to match db
+
+          #place
+          if (input$location_type == "lon_lat") {
+            # transform to wgs84 if not already
+            #check it's in the UK
+            lons <-  rv_local$loaded_data[[the_columns[["lon"]]]]
+            lats <-  rv_local$loaded_data[[the_columns[["lat"]]]]
+
+          } else {
+            # currently not finished yet
+            # set geometry  to wgs84 and split it
+            #check it's in the UK
+            lons <-  rv_local$loaded_data[[the_columns[["lon"]]]]
+            lats <-  rv_local$loaded_data[[the_columns[["lat"]]]]
+          }
+
+          # add to df to load in db
+          rv_local$to_load$lon <- lons
+          rv_local$to_load$lat <- lats
+
+          #time
+          if (input$time_type == "split_date"){
+            years <- rv_local$loaded_data[[the_columns[["year"]]]]
+          } else {
+            ##convert date into right format and extract the year
+            ## not worked on this yet
+            years <- rv_local$loaded_data[[the_columns[["year"]]]]
+          }
+
+          # add to df to load in db
+          rv_local$to_load$year <- years
+
+          # go to next checking step
+          output$format_error_date_and_time <- renderUI({ return(NULL) })
+          rv_local$file_status <- "right"
+
+        }else{
+          output$format_error_date_and_time <- renderUI({ return(
+            p("Some columns that we expected to be numeric are in the wrong format", style = "color: red;"))
+          })
+        }
       }else{
-        #display error text
-        error_txt <- c()
-
-        if (!numeric_check) {
-          error_txt <- c(error_txt, "Some numeric values are not in the format we expected")
-        }
-
-        if(!present_check) {
-          error_txt <- c(error_txt, "Some columns that we need are not present in your data")
-        }
-        output$format_error_date_and_time <- renderUI({
-          return(p(paste(error_txt, collapse = " & "), style = "color: red;"))
+        output$format_error_date_and_time <- renderUI({ return(
+          p("Some data that we were expecting is missing", style = "color: red;"))
         })
-
-
       }
-
-
 
     })
 
     #### step 3: accept and upload to db ###
+    observeEvent(input$submit_to_db, label = "check privacy, if so load onto db",{
+      if (!input$acceptCheckbox){
+        output$privacy_text <- renderUI({
+          return(p("You must accept to upload your data", style = "color: red;"))
+        })
+      }else{
+        output$privacy_text <- renderUI({
+          return(NULL)
+        })
 
-    #       # check that the columns selected by the user make sense
-    #       check <- NULL
-    #
-    #       #columns that should be numeric
-    #
-    #
-    #       numeric_vector <- tryCatch({ unlist(rv_local$loaded_data[, cols_needed_numeric, drop = FALSE]) }, error = function(e) {c(check, "FALSE")})
+        ###upload to db ##
+        data_to_save <- rv_local$to_load
+        data_to_save$user <- rv$user
 
-    # columns that should be character
-
-    #
-    #       #the slected
-    #       dropdown_values <- input$dropdown_values
-    #       #column name selection
-    #       name_choices <- sapply(rv_local$df$Name, function(var) {
-    #         input_id <- paste0("select_", var)
-    #         dropdown_values[[input_id]] %||% NA_character_
-    #       })
-    #       #unit selections
-    #       unit_choices <- sapply(rv_local$df$`Name varible`, function(var) {
-    #         input_id <- paste0("unit_select_", var)
-    #         dropdown_values[[input_id]] %||% NA_character_
-    #       })
-    #
-    #       df_selected <- rv_local$df
-    #       df_selected$Selected <- name_choices
-    #       df_selected$Units <- unit_choices
-    #
-    #
-    #       # get the dataframe with the choices made by the user
-    #       n_rows <- nrow(rv_local$df)  # your original df
-    #
-    #       # Vector to hold dropdown selections
-    #       selected_values <- vector("character", length = n_rows)
-    #
-    #       for (i in seq_len(n_rows)) {
-    #         # input IDs must match your dropdowns exactly
-    #         dropdown_id <- paste0("select_", i)
-    #
-    #         # Access input$select_i safely (may be NULL if not selected)
-    #         selected_values[i] <- input[[dropdown_id]] %||% NA_character_
-    #       }
-    #
-    #       # Combine with your original df (or however you want)
-    #       df_with_selections <- cbind(rv_local$df, Selected = selected_values)
-    #
-    #       browser()
-    #
-    #       data_to_save <- data.frame(
-    #         "survey" = loaded_data$survey,
-    #         "site_id" = loaded_data$site_id,
-    #         "year" = loaded_data$year,
-    #         "lon" = loaded_data$lon,
-    #         "lat" = loaded_data$lat,
-    #         "z" = loaded_data$z,
-    #         "d" = loaded_data$d,
-    #         "rho_fe" = loaded_data$rho_fe,
-    #         "f_c" = loaded_data$f_c,
-    #         "S_cz" = loaded_data$S_cz,
-    #         "user" = rv$user
-    #       )
-    #
-    #       # save the loaded data into the system
-    #       load(here::here("data/all_data.rda"))
-    #       all_data <- rbind(all_data, data_to_save)
-    #
-    #       all_data <- all_data %>%
-    #         dplyr::distinct(dplyr::across(-user), .keep_all = TRUE)
-    #
-    #       all_data <- janitor::remove_empty(all_data, which = "rows")
-    #
-    #       rv$all_data <- all_data
-    #
-    #       save(all_data, file = here::here("data/all_data.rda"))
-    #
-    #       # select the site of the uploaded file to run
-    #       rv_local$selected_sites <- c(data_to_save$site_id)
-    #
-    #       rv_local$file_status <- "right"
-    #
-    #       # close the modal
-    #       removeModal()
-
-
-
-
-    observeEvent(rv_local$selected_sites, label = "when db is updated, automatically select the new data", {
-      if (!is.null(rv_local$selected_sites)) {
+        #save the loaded data into the system
         load(here::here("data/all_data.rda"))
-        updateSelectizeInput(session = session, inputId = "sites_picker", selected = sort(rv_local$selected_sites), choices = sort(all_data$site_id))
+        all_data <- rbind(all_data, data_to_save)
+
+        all_data <- all_data %>%
+          dplyr::distinct(dplyr::across(-user), .keep_all = TRUE)
+
+        all_data <- janitor::remove_empty(all_data, which = "rows")
+        rv$all_data <- all_data
+
+        save(all_data, file = here::here("data/all_data.rda"))
+
+        # automatically select the site of the uploaded file to run
+        rv$selected_sites_upload <- c(data_to_save$site_id)
+
+        # close the modal
+        removeModal()
       }
+
     })
+
   })
 }
 

@@ -23,7 +23,7 @@ app_server <- function(input, output, session) {
   rv$data_results_B <- NULL
 
   rv$example_locations <- NULL
-
+  rv$selected_sites_upload <- NULL
 
   rv$all_data <- NULL
 

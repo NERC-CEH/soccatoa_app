@@ -134,6 +134,13 @@ mod_select_sites_server <- function(id, rv, x) {
       showModal(upload_dataset_modal())
     })
 
+    observeEvent(rv$selected_sites_upload, label = "when db is updated, automatically select the new data", {
+      if (!is.null(rv$selected_sites_upload)) {
+        load(here::here("data/all_data.rda"))
+        updateSelectizeInput(session = session, inputId = "sites_picker", selected = sort(rv$selected_sites_upload), choices = sort(all_data$site_id))
+      }
+    })
+
     #######################################################
     ############ when sites to run are selected ###########
     #######################################################
