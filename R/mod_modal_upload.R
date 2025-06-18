@@ -148,11 +148,34 @@ mod_modal_upload_ui <- function(id) {
       )
     ),
 
-
-    # CHECKING FILE LOADED - step 3 asking confirmation
+    # CHECKING FILE LOADED - step 3
     conditionalPanel(
       condition = "output.panelCondition_rightfile",
       ns = NS(id),
+
+      bslib::navset_card_tab(
+        header = NULL,
+        footer = NULL,
+        full_screen = TRUE,
+        height = 450,
+        bslib::nav_panel("Map",
+                         leaflet::leafletOutput(ns("map_preview"))
+                         ),
+        bslib::nav_panel("Summary",
+                         DT::DTOutput(ns("table_preview"))
+                         )
+
+        ),
+      actionButton(ns("map_checked"), label = "next", width = "50%", style = "margin-right: 0px; font-size:95%;", class = "btn-info")
+      ),
+
+
+
+    # CHECKING FILE LOADED - step 4 asking confirmation
+    conditionalPanel(
+      condition = "output.panelCondition_submitfile",
+      ns = NS(id),
+
       fluidRow(
         column(
           12,
@@ -204,11 +227,19 @@ mod_modal_upload_server <- function(id, rv, x) {
     })
     outputOptions(output, "panelCondition_checkingfile_2", suspendWhenHidden = FALSE)
 
-    # to show the accept and upload
+    # to show the preview map and table
     output$panelCondition_rightfile <- reactive({
       rv_local$file_status == "right"
     })
     outputOptions(output, "panelCondition_rightfile", suspendWhenHidden = FALSE)
+
+    # to show the accept and upload
+    output$panelCondition_submitfile <- reactive({
+      rv_local$file_status == "submit"
+    })
+    outputOptions(output, "panelCondition_submitfile", suspendWhenHidden = FALSE)
+
+
 
     #### uploaded file ###
     observeEvent(input$submit, ignoreInit = T, label = "when uploaded file update rv", {
@@ -482,10 +513,30 @@ mod_modal_upload_server <- function(id, rv, x) {
 
           #place
           if (input$location_type == "lon_lat") {
+
             # transform to wgs84 if not already
+            if (input$location_proj == "BNG") {
+              # if in BNG transform to wgs84
+              coords <- sf::st_as_sf(rv_local$loaded_data, coords = c(the_columns[["lon"]], the_columns[["lat"]]), crs = 27700)
+              coords_wgs84 <- sf::st_transform(coords, crs = 4326)
+
+              lons <- sf::st_coordinates(coords_wgs84)[, 1]
+              lats <- sf::st_coordinates(coords_wgs84)[, 2]
+
+            }else{
+              # if already in wgs84 just split the columns
+              lons <- rv_local$loaded_data[[the_columns[["lon"]]]]
+              lats <- rv_local$loaded_data[[the_columns[["lat"]]]]
+            }
+
+
             #check it's in the UK
-            lons <-  rv_local$loaded_data[[the_columns[["lon"]]]]
-            lats <-  rv_local$loaded_data[[the_columns[["lat"]]]]
+            if (any(lons < -8 | lons > 2 | lats < 49 | lats > 61)) {
+              output$format_error_date_and_time <- renderUI({
+                return(p("The coordinates you provided are not in the UK, please check your data", style = "color: red;"))
+              })
+              return()
+            }
 
           } else {
             # currently not finished yet
@@ -528,7 +579,92 @@ mod_modal_upload_server <- function(id, rv, x) {
 
     })
 
-    #### step 3: accept and upload to db ###
+    #### step 3: show the map and table ###
+    output$map_preview <- leaflet::renderLeaflet({
+
+      if (isTruthy(rv_local$to_load)){
+
+        # clean the data to use on map
+        data <-
+          rv_local$to_load  %>%
+          dplyr::select(survey, site_id, year, z, d, rho_fe, f_c, S_cz, lon, lat) %>%
+          dplyr::group_by(site_id, lon, lat) %>%
+          dplyr::summarise(
+            year = if (min(year) == max(year)) {
+              as.character(min(year))
+            } else {
+              paste0(min(year), " - ", max(year))
+            },
+            survey = paste(unique(survey), collapse = ", "),
+            z = paste(round(z, 2), collapse = ", "),
+            d = paste(round(d, 2), collapse = ", "),
+            rho_fe = paste(round(rho_fe, 2), collapse = ", "),
+            f_c = paste(round(f_c, 2), collapse = ", "),
+            S_cz = paste(round(S_cz, 2), collapse = ", "),
+            .groups = "drop"
+          )
+
+        # palette
+        colors <- rep(c("#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"),
+                      length.out = length(unique(data$site_id))
+        )
+        site_palette <- leaflet::colorFactor(palette = colors, domain = data$site_id)
+
+        # Map
+        leaflet::leaflet() %>%
+          htmlwidgets::onRender("function(el, x) {this.zoomControl.setPosition('bottomright');}") %>%
+          # the maps background
+          leaflet::addProviderTiles("Esri.WorldImagery", group = "Esri.WorldImagery", options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE)) %>%
+          leaflet::addProviderTiles("OpenStreetMap.Mapnik", options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE), group = "Streets") %>%
+          leaflet::addProviderTiles("Esri.WorldImagery", options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE), group = "Satellite") %>%
+          leaflet::addLayersControl(baseGroups = c("Streets", "Satellite"), options = leaflet::layersControlOptions(collapsed = T, position = "topright")) %>%
+          # add the markers of the dataset to run
+          leaflet::addCircleMarkers(
+            data = data,
+            radius = 6,
+            color = ~ site_palette(site_id),
+            stroke = FALSE,
+            popup = ~ paste0(
+              "<b>Survey:</b> ", survey, "<br>",
+              "<b>Site ID:</b> ", site_id, "<br>",
+              "<b>Year:</b> ", year, "<br>",
+              "<b>z:</b> ", z, "<br>",
+              "<b>d:</b> ", d, "<br>",
+              "<b>&rho;_fe:</b> ", rho_fe, "<br>",
+              "<b>f_c:</b> ", f_c, "<br>",
+              "<b>S_cz:</b> ", S_cz
+            ),
+            fillOpacity = 1
+          )
+      } else {
+        return(NULL)
+      }
+
+    })
+
+    output$table_preview <- DT::renderDataTable({
+
+      if (isTruthy(rv_local$to_load)) {
+        data_df <- rv_local$to_load %>%
+          dplyr::select(site_id, survey, year, lon, lat, z, d, rho_fe, f_c, S_cz)
+
+        DT::datatable(data_df,
+                      options = list(
+                        pageLength = 10,
+                        searching = TRUE
+                      )
+        )
+      } else {
+        return(NULL)
+      }
+    })
+
+    observeEvent(input$map_checked, label = "mapped was checked", {
+      #go on next page
+      rv_local$file_status <-  "submit"
+    })
+
+    #### step 4: accept and upload to db ###
     observeEvent(input$submit_to_db, label = "check privacy, if so load onto db",{
       if (!input$acceptCheckbox){
         output$privacy_text <- renderUI({
@@ -557,7 +693,7 @@ mod_modal_upload_server <- function(id, rv, x) {
 
         # automatically select the site of the uploaded file to run
         rv$selected_sites_upload <- c(data_to_save$site_id)
-
+        rv_local$file_status <- "none"
         # close the modal
         removeModal()
       }
