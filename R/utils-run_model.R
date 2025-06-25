@@ -41,34 +41,6 @@ run_model_B <- function(yrstart, yrend) {
     u <- runif(n, min = F.a, max = F.b)
     qgamma(u, shape = shape, rate = rate)
   }
-  #' Reads CMIP6 parameters.
-  #'
-  #' This function returns a dataset containing CMIP6 parameter data.
-  #'
-  #' @return A dataset containing CMIP6 parameters.
-  get_cmip <- function() {
-    # 149 million km2
-    area_earth <- set_units(149E6, km^2)
-
-    df_betagammaCs = read.csv("data-raw/betagammaCs.csv")
-
-    # Pg C / ppm
-    beta <- df_betagammaCs$beta
-    beta <- set_units(beta, Pg / ppm)
-    beta <- beta / area_earth
-    beta <- set_units(beta, kg / m^2 / ppm)
-
-    # Pg C / oC
-    gamma <- df_betagammaCs$gamma
-    # Pg C inital soil C stock in RAD run
-    C_s <- df_betagammaCs$Cs
-    gamma <- set_units(gamma, Pg / degC)
-    C_s <- set_units(C_s, Pg)
-    gamma <- gamma / C_s
-    # should we rename parameters is using gamma distribution later on?
-    df_cmip <- data.frame(beta=beta, gamma=gamma)
-    return(df_cmip)
-  }
   #' Calculate the change in soil carbon and its uncertainty arising from change
   #' in CO2 and temperature.
   #'
@@ -110,7 +82,8 @@ run_model_B <- function(yrstart, yrend) {
     rate = 1371.239,
     intercept = 0.004518087,
     slope = -3.611591834,
-    sigma = 0.007210343
+    sigma = 0.007210343,
+    maxbeta
   ) {
     this_scenario <- match.arg(this_scenario)
     co2_start <- df_scenario$co2[df_scenario$year == start_year & df_scenario$scenario == this_scenario]
@@ -122,7 +95,7 @@ run_model_B <- function(yrstart, yrend) {
 
     v_beta <- rgammat(
       n = n_sim,
-      range = c(0, max(df_cmip$beta)),
+      range = c(0, maxbeta),
       shape = shape,
       rate = rate
     )
@@ -132,24 +105,24 @@ run_model_B <- function(yrstart, yrend) {
     v_dc <- v_beta * dco2 + v_gamma * dta
     v_S_c_end <- S_c_start + v_dc
 
-    p <- ggplot(data = data.frame(S_c = v_S_c_end), aes(x = S_c, y = ..density..))
-    p <- p + geom_density()
-    p <- p + geom_histogram(bins = 30)
-    p <- p + geom_vline(xintercept = S_c_start)
-    p <- p +
-      xlab(paste("Predicted soil carbon stock in", eval(end_year), ", kg/m2"))
-
-    return(list(sigma = sd(v_S_c_end), p = p))
+    return(v_S_c_end)
   }
   df_scenario <- readRDS("data-raw/df_scenario.rds")
 
-  df_cmip <- get_cmip()
+  df_gamma <- read.csv("data-raw/files/df_gamma.csv")
 
   l_sigma <- get_co2climate_effect(
     n_sim = 10000,
-    start_year = yrstart,
-    end_year = yrend,
-    this_scenario = "RCP8.5"
+    start_year = 2025,
+    end_year = 2050,
+    this_scenario = "RCP8.5",
+    shape = df_gamma$shape,
+    rate = df_gamma$rate,
+    intercept = df_gamma$intercept,
+    slope = df_gamma$slope,
+    sigma = df_gamma$sigma,
+    maxbeta = df_gamma$maxbeta
   )
+
   return(l_sigma)
 }
