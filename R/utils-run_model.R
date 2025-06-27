@@ -107,7 +107,6 @@ run_model_B <- function(yrstart, yrend) {
 
     return(v_S_c_end)
   }
-  df_scenario <- readRDS("data-raw/df_scenario.rds")
 
   df_gamma <- read.csv("data-raw/files/df_gamma.csv")
 
