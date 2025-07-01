@@ -46,3 +46,24 @@ get_unit_choices <- function(var_name) {
 
   return(character(0))
 }
+
+
+#' transform date
+#' @description function to transfrom column into right date format
+#' @param x column values
+#' @param type starting date format
+#' @return the column values in date format d/%m/%Y
+#' @export
+#'
+get_right_date_format <- function(x, type){
+
+  original_dates <- as.Date(x, format = type)
+
+  corrected_dates <- ifelse(is.na(original_dates), NA,
+                           format(original_dates, "%d/%m/%Y")
+                           )
+
+
+  return(corrected_dates)
+
+}

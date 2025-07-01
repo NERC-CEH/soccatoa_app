@@ -51,7 +51,7 @@ mod_select_sites_ui <- function(id) {
             header = NULL,
             footer = NULL,
             full_screen = TRUE,
-            height = 450,
+            height = 470,
             bslib::nav_panel(
               "Map",
               leaflet::leafletOutput(ns("map"))
@@ -65,7 +65,7 @@ mod_select_sites_ui <- function(id) {
         column(
           6,
           bslib::card(
-            height = 450,
+            height = 470,
             # class = "p-0",
             bslib::card_body(
               p(lorem::ipsum(1, 2), style = "text-align:justify;"),
@@ -282,11 +282,12 @@ mod_select_sites_server <- function(id, rv, x) {
           dplyr::bind_cols(sf::st_coordinates(rv$my_data)) %>% # Extract longitude and latitude
           dplyr::rename(lon = X, lat = Y) %>% # Rename columns to 'lon' and 'lat'
           sf::st_drop_geometry() %>% # Drop the geometry column
-          dplyr::select(site_id, survey, year, lon, lat, z, d, rho_fe, f_c, S_cz)
+          dplyr::select(site_id, survey, day, month, year, lon, lat, z, d, rho_fe, f_c, S_cz) %>%
+          dplyr::mutate(dplyr::across(where(is.numeric), ~ round(.x, 3)))
 
         DT::datatable(data_df,
           options = list(
-            pageLength = 10,
+            pageLength = 3,
             searching = TRUE
           )
         )
@@ -377,25 +378,6 @@ mod_select_sites_server <- function(id, rv, x) {
       content = function(file) {
         file.copy(here::here(
           "inst/app/www/downloadables/documentation_facsimile.pdf"
-        ), file)
-      }
-    )
-
-
-    output$download_format <- downloadHandler(
-      filename = paste0("explanation_format_SOCCATOA", ".pdf", sep = ""),
-      content = function(file) {
-        file.copy(here::here(
-          "inst/app/www/downloadables/example_format_soccatoa.pdf"
-        ), file)
-      }
-    )
-
-    output$download_template <- downloadHandler(
-      filename = paste0("explanation_format_SOCCATOA", ".pdf", sep = ""),
-      content = function(file) {
-        file.copy(here::here(
-          "inst/app/www/downloadables/example_format_soccatoa.pdf"
         ), file)
       }
     )

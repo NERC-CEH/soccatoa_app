@@ -14,48 +14,49 @@ mod_modal_upload_ui <- function(id) {
     # use js script
     includeScript("inst/app/www/script.js"),
 
-    # the rest
-    h5("Upload your dataset in our database"),
-    br(),
+    # Title
+    fluidRow(
+      column(
+        10,
+        offset = 1,
+        h5("Upload your dataset in our database")
+        )
+    ),
 
     # bar to load the file
     fluidRow(
       column(
-        6,
-        fileInput(ns("upload"), label = NULL, buttonLabel = "upload file", accept = ".csv", placeholder = "...", width = "100%", multiple = F)
-      ),
-      column(
-        3,
-        actionButton(ns("submit"), label = "submit", width = "100%", style = "margin-right: 0px; font-size:95%;", class = "btn-info")
-      ),
-      column(
-        3,
-        downloadButton(ns("download_template"), "Download example template", class = "btn-info", width = "100%", style = "font-size:100%")
-      )
+        10,
+        offset = 1,
+
+        fluidRow(
+          column( 6,
+                  fileInput(ns("upload"), label = NULL, buttonLabel = "upload file", accept = ".csv", placeholder = "...", width = "100%", multiple = F)
+                  ),
+          column( 3,
+                  actionButton(ns("submit"), label = "submit", width = "100%", style = "margin-right: 0px; font-size:95%;", class = "btn-info")
+                  ),
+          column( 3,
+                 downloadButton(ns("download_template"), "Example template", class = "btn-info", width = "100%")
+                 )
+          )
+        )
     ),
 
-    # IF copmletely WRONG FILE FORMAT LOADED
+    # IF completely WRONG FILE FORMAT LOADED
     conditionalPanel(
       condition = "output.panelCondition_wrongfile",
       ns = NS(id),
       fluidRow(
         column(
-          12,
-          bslib::card(
-            height = 200,
-            bslib::card_body(
-              p("The files you uploaded doesn't seem to have the right format", style = "text-align:justify;"),
-              fluidRow(
-                column(4,
-                  offset = 4,
-                  downloadButton(ns("download_format"), "Download example format", class = "btn-info", width = "100%", style = "font-size:100%")
-                )
-              )
-            )
+          10,
+          offset = 1,
+
+          p("The files you uploaded doesn't seem to have the right format", style = "text-align:justify;"),
           )
         )
-      )
-    ),
+      ),
+
 
     # IF RIGHT FORMAT STILL NEEDS TO MATCH FOR OUR DB
 
@@ -65,23 +66,15 @@ mod_modal_upload_ui <- function(id) {
       ns = NS(id),
       fluidRow(
         column(
-          12,
-          bslib::card(
-            bslib::card_body(
-              fluidRow(
-                column(10,
-                  offset = 1,
-                  DT::DTOutput(ns("cols_table")),
-                  div(
-                    style = "text-align: right;",
-                    actionButton(ns("submit_cols"), label = "next", width = "50%", style = "margin-right: 0px; font-size:95%;", class = "btn-info")
-                  ),
-                  uiOutput(ns("format_error"))
-                )
-              )
-            )
+          10,
+          offset = 1,
+          DT::DTOutput(ns("cols_table")),
+          div(
+            style = "text-align: right;",
+            actionButton(ns("submit_cols"), label = "next", width = "20%", style = "margin-right: 0px; font-size:95%;", class = "btn-info"),
+            uiOutput(ns("format_error"))
           )
-        )
+      )
       )
     ),
 
@@ -91,85 +84,81 @@ mod_modal_upload_ui <- function(id) {
       ns = NS(id),
       fluidRow(
         column(
-          12,
-          bslib::card(
-            bslib::card_body(
-              fluidRow(
-                column(10,
-                  offset = 1,
+          10,
+          offset = 1,
+          fluidRow(column(6,
 
-                  # place
-                  h4("About the location of your sites..."),
-                  radioButtons(ns("location_type"), label = "What type of location is indicated in your dataset?", choices = c("Lat/y and Lon/x" = "lon_lat", "geometry" = "geom"), selected = "lon_lat", inline = TRUE),
-                  radioButtons(ns("location_proj"), label = "What type of projection is your dataset using?", choices = c("WGS84", "BNG"), selected = "WGS84", inline = TRUE),
-                  p("If you are not sure, please check the documentation of your dataset or contact the data provider."),
-                  conditionalPanel(
-                    condition = "input.location_type == 'lon_lat'",
-                    ns = NS(id),
-                    uiOutput(ns("col_lon_lat"))
-                  ),
-                  conditionalPanel(
-                    condition = "input.location_type == 'geom'",
-                    ns = NS(id),
-                    p("not worked on this yet", style = "color: red;")
-                    # uiOutput(ns("col_geom"))
-                  ),
+                          # place
+                          h4("Specify the location"),
+                          radioButtons(ns("location_proj"), label = "What type of projection is your dataset using?", choices = c("WGS84", "BNG"), selected = "WGS84", inline = TRUE),
+                          p("If you are not sure, please check the documentation of your dataset or contact the data provider."),
+                          uiOutput(ns("col_lon_lat"))
 
-                  # time
-                  h4("About the time dimension of the dataset..."),
-                  radioButtons(ns("time_type"), label = "How is the timing of your dataset indicated?", choices = c(
-                    "Data format (YY/MM/DD or similar)" = "format_date",
-                    "day column, month column and or year column" = "split_date"
-                  ), selected = "split_date", inline = TRUE),
-                  p("At leas one time dimension must be present in your dataset (i.e., the year), others are optional."),
-                  conditionalPanel(
-                    condition = "input.time_type == 'format_date'",
-                    ns = NS(id),
-                    p("not worked on this yet", style = "color: red;")
-                    # uiOutput(ns("col_date_format"))
-                  ),
-                  conditionalPanel(
-                    condition = "input.time_type == 'split_date'",
-                    ns = NS(id),
-                    uiOutput(ns("col_date_split"))
-                  ),
+                          ),
 
-                  # next
-                  div(
-                    style = "text-align: right;",
-                    actionButton(ns("submit_date_and_time"), label = "next", width = "50%", style = "margin-right: 0px; font-size:95%;", class = "btn-info")
-                  ),
-                  uiOutput(ns("format_error_date_and_time"))
-                )
-              )
+                   column(6,
+
+                          #time
+                          h4("Specify the time"),
+                          radioButtons(ns("time_type"), label = "How is the timing of your dataset indicated?", choices = c(
+                            "Data format (YY/MM/DD or similar)" = "format_date",
+                            "day column, month column and or year column" = "split_date"
+                          ), selected = "split_date", inline = TRUE),
+
+                          p("At leas one time dimension must be present in your dataset (i.e., the year), others are optional."),
+
+                          conditionalPanel(
+                            condition = "input.time_type == 'format_date'",
+                            ns = NS(id),
+                            uiOutput(ns("col_date_format"))
+                            ),
+
+                          conditionalPanel(
+                            condition = "input.time_type == 'split_date'",
+                            ns = NS(id),
+                            uiOutput(ns("col_date_split"))
+                            )
+                          )
+                   ),
+
+          # next
+          div(
+            style = "text-align: right;",
+            actionButton(ns("submit_date_and_time"), label = "next", width = "20%", style = "margin-right: 0px; font-size:95%;", class = "btn-info"),
+            uiOutput(ns("format_error_date_and_time"))
             )
           )
         )
-      )
-    ),
+      ),
 
-    # CHECKING FILE LOADED - step 3
+    # CHECKING FILE LOADED - step 3 see on a map and table
     conditionalPanel(
       condition = "output.panelCondition_rightfile",
       ns = NS(id),
 
-      bslib::navset_card_tab(
-        header = NULL,
-        footer = NULL,
-        full_screen = TRUE,
-        height = 450,
-        bslib::nav_panel("Map",
-                         leaflet::leafletOutput(ns("map_preview"))
-                         ),
-        bslib::nav_panel("Summary",
-                         DT::DTOutput(ns("table_preview"))
-                         )
+      fluidRow(column(10,
+               offset = 1,
 
-        ),
-      actionButton(ns("map_checked"), label = "next", width = "50%", style = "margin-right: 0px; font-size:95%;", class = "btn-info")
+               bslib::navset_card_tab(
+                 header = NULL,
+                 footer = NULL,
+                 full_screen = TRUE,
+                 height = 450,
+                 bslib::nav_panel("Map",
+                                  leaflet::leafletOutput(ns("map_preview"))
+                                  ),
+                 bslib::nav_panel("Summary",
+                                  DT::DTOutput(ns("table_preview"))
+                                  )
+
+                 ),
+               div(
+                 style = "text-align: right;",
+                 actionButton(ns("map_checked"), label = "next", width = "20%", style = "margin-right: 0px; font-size:95%;", class = "btn-info")
+               )
+      )
+      )
       ),
-
-
 
     # CHECKING FILE LOADED - step 4 asking confirmation
     conditionalPanel(
@@ -239,6 +228,15 @@ mod_modal_upload_server <- function(id, rv, x) {
     })
     outputOptions(output, "panelCondition_submitfile", suspendWhenHidden = FALSE)
 
+    #download template
+    output$download_template <- downloadHandler(
+      filename = paste0("explanation_format_SOCCATOA", ".pdf", sep = ""),
+      content = function(file) {
+        file.copy(here::here(
+          "inst/app/www/downloadables/example_format_soccatoa.pdf"
+        ), file)
+      }
+    )
 
 
     #### uploaded file ###
@@ -292,7 +290,10 @@ mod_modal_upload_server <- function(id, rv, x) {
           dom = "t", # clean look
           ordering = FALSE # no changing of rows order allowed
         )
-      )
+      ) %>%
+
+      DT::formatStyle( columns = names(df), backgroundColor = 'transparent', color = 'black' )
+
     })
 
     observeEvent(input$submit_cols, label = "when submitted the columns save a snapshot of the user selection using JS", {
@@ -395,34 +396,30 @@ mod_modal_upload_server <- function(id, rv, x) {
       list(
         fluidRow(
           column(
-            3,
-            selectInput(ns("col_lon"), "Column with lon/X", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+            5,
+            selectInput(ns("col_lon"), "Column with lon/X", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "", width = "100%")
           ),
           column(
-            3,
-            selectInput(ns("col_lat"), "Column with lat/Y", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+            5,
+            selectInput(ns("col_lat"), "Column with lat/Y", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "", width = "100%")
           )
         )
       )
     })
 
-    output$col_geom <- renderUI({
-      selectInput(ns("col_geom"), "Column with geometry", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
-    })
-
     output$col_date_split <- renderUI({
       list(
         fluidRow(
-          # column(
-          #   3,
-          #   selectInput(ns("col_day"), "Column with day", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
-          # ),
-          # column(
-          #   3,
-          #   selectInput(ns("col_month"), "Column with month", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
-          # ),
           column(
-            3,
+            4,
+            selectInput(ns("col_day"), "Column with day", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+          ),
+          column(
+            4,
+            selectInput(ns("col_month"), "Column with month", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+          ),
+          column(
+            4,
             selectInput(ns("col_year"), "Column with year", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
           )
         )
@@ -460,8 +457,9 @@ mod_modal_upload_server <- function(id, rv, x) {
       the_columns <- list(
         lon = input$col_lon,
         lat = input$col_lat,
-        geom = input$col_geom,
         year = input$col_year,
+        month = input$col_month,
+        day = input$col_day,
         date = input$col_date
       )
 
@@ -474,11 +472,7 @@ mod_modal_upload_server <- function(id, rv, x) {
       })
 
       # check the right one are present
-      if (input$location_type == "lon_lat") {
-        check_present <- all(!is.na(c(the_columns$lon, the_columns$lat)))
-      }else{
-        check_present <- !is.na(the_columns$geom)
-      }
+      check_present <- all(!is.na(c(the_columns$lon, the_columns$lat)))
 
       if (input$time_type == "split_date") {
         check_present <- check_present && !is.na(the_columns$year)
@@ -490,11 +484,7 @@ mod_modal_upload_server <- function(id, rv, x) {
       if (check_present){
 
         #numeric
-        if (input$location_type == "lon_lat") {
-          expected_numeric <- c(the_columns$lon, the_columns$lat)
-        } else {
-          expected_numeric <- c(the_columns$geom)
-        }
+        expected_numeric <- c(the_columns$lon, the_columns$lat)
 
         if (input$time_type == "split_date") {
           expected_numeric <- c(expected_numeric, the_columns$col_year)
@@ -508,62 +498,85 @@ mod_modal_upload_server <- function(id, rv, x) {
 
         if(numeric_check){
 
-          #right format
-          ##### adjust dat to match db
+          ##### proceed to adjust dat to match db
 
-          #place
-          if (input$location_type == "lon_lat") {
+          #############
+          ### place ###
+          #############
 
-            # transform to wgs84 if not already
-            if (input$location_proj == "BNG") {
-              # if in BNG transform to wgs84
-              coords <- sf::st_as_sf(rv_local$loaded_data, coords = c(the_columns[["lon"]], the_columns[["lat"]]), crs = 27700)
-              coords_wgs84 <- sf::st_transform(coords, crs = 4326)
+          # transform to wgs84 if not already
+          if (input$location_proj == "BNG") {
+            # if in BNG transform to wgs84
+            coords <- sf::st_as_sf(rv_local$loaded_data, coords = c(the_columns[["lon"]], the_columns[["lat"]]), crs = 27700)
+            coords_wgs84 <- sf::st_transform(coords, crs = 4326)
+            lons <- sf::st_coordinates(coords_wgs84)[, 1]
+            lats <- sf::st_coordinates(coords_wgs84)[, 2]
+          }else{
+            # if already in wgs84 just split the columns
+            lons <- rv_local$loaded_data[[the_columns[["lon"]]]]
+            lats <- rv_local$loaded_data[[the_columns[["lat"]]]]
+          }
 
-              lons <- sf::st_coordinates(coords_wgs84)[, 1]
-              lats <- sf::st_coordinates(coords_wgs84)[, 2]
-
-            }else{
-              # if already in wgs84 just split the columns
-              lons <- rv_local$loaded_data[[the_columns[["lon"]]]]
-              lats <- rv_local$loaded_data[[the_columns[["lat"]]]]
-            }
-
-
-            #check it's in the UK
-            if (any(lons < -8 | lons > 2 | lats < 49 | lats > 61)) {
-              output$format_error_date_and_time <- renderUI({
-                return(p("The coordinates you provided are not in the UK, please check your data", style = "color: red;"))
-              })
-              return()
-            }
-
-          } else {
-            # currently not finished yet
-            # set geometry  to wgs84 and split it
-            #check it's in the UK
-            lons <-  rv_local$loaded_data[[the_columns[["lon"]]]]
-            lats <-  rv_local$loaded_data[[the_columns[["lat"]]]]
+          #check it's in the UK or stop
+          if (any(lons < -8 | lons > 2 | lats < 49 | lats > 61)) {
+            output$format_error_date_and_time <- renderUI({ return(p("The coordinates you provided are not in the UK, please check your data", style = "color: red;")) })
+            return()
           }
 
           # add to df to load in db
           rv_local$to_load$lon <- lons
           rv_local$to_load$lat <- lats
 
-          #time
+          #############
+          ### time ####
+          #############
+
           if (input$time_type == "split_date"){
+
+            #mandatory: the year
             years <- rv_local$loaded_data[[the_columns[["year"]]]]
+
+            #faculatative: month and day
+            if(!is.na(the_columns[["month"]]) ) {
+              if ( !any(is.na(as.numeric(as.character(the_columns[["month"]]))) & !is.na(the_columns[["month"]])) ){
+                month <- rv_local$loaded_data[[the_columns[["month"]]]]
+              } else {
+                month <- NA
+              }
+            }else {
+              month <- NA
+            }
+
+            if(!is.na(the_columns[["day"]]) ) {
+              if ( !any(is.na(as.numeric(as.character(the_columns[["day"]]))) & !is.na(the_columns[["day"]])) ){
+                day <- rv_local$loaded_data[[the_columns[["day"]]]]
+              } else {
+                day <- NA
+              }
+            } else {
+              day   <- NA
+            }
+
           } else {
+
             ##convert date into right format and extract the year
-            ## not worked on this yet
-            years <- rv_local$loaded_data[[the_columns[["year"]]]]
+            dates <- get_right_date_format(rv_local$loaded_data[[the_columns[["date"]] ]])
+
+            years  <-  format(dates, "%Y")
+            month  <-  format(dates, "%m")
+            day    <-  format(dates, "%d")
           }
 
           # add to df to load in db
           rv_local$to_load$year <- years
 
+          #saving month and day if present
+          rv_local$to_load$month <- month
+          rv_local$to_load$day <- day
+
           # go to next checking step
           output$format_error_date_and_time <- renderUI({ return(NULL) })
+
           rv_local$file_status <- "right"
 
         }else{
@@ -587,7 +600,7 @@ mod_modal_upload_server <- function(id, rv, x) {
         # clean the data to use on map
         data <-
           rv_local$to_load  %>%
-          dplyr::select(survey, site_id, year, z, d, rho_fe, f_c, S_cz, lon, lat) %>%
+          dplyr::select(survey, site_id, day, month, year, z, d, rho_fe, f_c, S_cz, lon, lat) %>%
           dplyr::group_by(site_id, lon, lat) %>%
           dplyr::summarise(
             year = if (min(year) == max(year)) {
@@ -646,11 +659,12 @@ mod_modal_upload_server <- function(id, rv, x) {
 
       if (isTruthy(rv_local$to_load)) {
         data_df <- rv_local$to_load %>%
-          dplyr::select(site_id, survey, year, lon, lat, z, d, rho_fe, f_c, S_cz)
+          dplyr::select(site_id, survey, day, month, year, lon, lat, z, d, rho_fe, f_c, S_cz) %>%
+          dplyr::mutate(dplyr::across(where(is.numeric), ~ round(.x, 3)))
 
         DT::datatable(data_df,
                       options = list(
-                        pageLength = 10,
+                        pageLength = 5,
                         searching = TRUE
                       )
         )
@@ -692,7 +706,7 @@ mod_modal_upload_server <- function(id, rv, x) {
         save(all_data, file = here::here("data/all_data.rda"))
 
         # automatically select the site of the uploaded file to run
-        rv$selected_sites_upload <- c(data_to_save$site_id)
+        rv$selected_sites_upload <- c(data_to_save$site_id)[1]
         rv_local$file_status <- "none"
         # close the modal
         removeModal()

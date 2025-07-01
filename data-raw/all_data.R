@@ -3,6 +3,8 @@
 all_data <- data.frame(
   "survey" = NA, # survey
   "site_id" = NA, # a unique site code
+  "day" = NA,
+  "month" = NA,
   "year" = NA, # or date "YYYY-mm-dd"
   "lon" = NA,
   "lat" = NA,
