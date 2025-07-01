@@ -193,11 +193,17 @@ body {
 }
 
 .btn-upload {
-    background-color: #A5C882;
-    border-color: #339B31;
+    background-color: #F18968;
+    border-color: #F18968;
+    color: #292C2F;
 }
 
-
+.btn-upload:hover {
+    background-color: #d96f4f; /* Slightly darker shade on hover */
+    border-color: #d96f4f;
+    color: #292C2F; /* Lighter text color on hover */
+    cursor: pointer;
+}
 
 /*****************************/
 /* modal login */
