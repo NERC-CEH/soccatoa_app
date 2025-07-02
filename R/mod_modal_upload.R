@@ -90,7 +90,8 @@ mod_modal_upload_ui <- function(id) {
 
                           # place
                           h4("Specify the location"),
-                          radioButtons(ns("location_proj"), label = "What type of projection is your dataset using?", choices = c("WGS84", "BNG"), selected = "WGS84", inline = TRUE),
+                          radioButtons(ns("location_proj"), label = "What type of projection is your dataset using?", choices = c("WGS84" = "WGS84",
+                                                                                                                                  "OSGrid (BNG, m)" = "BNG"), selected = "WGS84", inline = TRUE),
                           p("If you are not sure, please check the documentation of your dataset or contact the data provider."),
                           uiOutput(ns("col_lon_lat"))
 
@@ -167,24 +168,24 @@ mod_modal_upload_ui <- function(id) {
 
       fluidRow(
         column(
-          12,
+          10,
+          offset = 1,
           bslib::card(
             height = 300,
             bslib::card_body(
-              fluidRow(
-                column(10,
-                  offset = 1,
-                  h3("Terms & Conditions - understands what happens to your data..."),
-                  p(lorem::ipsum(10, 4))
-                )
+              h3("Terms & Conditions - understands what happens to your data..."),
+              p(lorem::ipsum(10, 4))
               )
-            )
+            ),
+          checkboxInput(ns("acceptCheckbox"), "I accept the terms and conditions"),
+          div(
+            style = "text-align: right;",
+            uiOutput(ns("privacy_text")),
+            actionButton(ns("submit_to_db"), label = "submit to database", width = "50%", style = "margin-right: 0px; font-size:95%;", class = "btn-info")
           )
         )
-      ),
-      checkboxInput(ns("acceptCheckbox"), "I accept the terms and conditions"),
-      uiOutput(ns("privacy_text")),
-      actionButton(ns("submit_to_db"), label = "submit to database", width = "50%", style = "margin-right: 0px; font-size:95%;", class = "btn-info")
+      )
+
     )
     # CLOSE MODULE
   )
@@ -241,7 +242,14 @@ mod_modal_upload_server <- function(id, rv, x) {
 
     #### uploaded file ###
     observeEvent(input$submit, ignoreInit = T, label = "when uploaded file update rv", {
-      rv_local$loaded_data <- readr::read_csv(input$upload$datapath, show_col_types = FALSE)
+      loaded_data <- readr::read_csv(input$upload$datapath, show_col_types = FALSE)
+      #trim all NAS at the bottom (happens sometimes in Excel)
+      while (nrow(loaded_data) > 0 && all(is.na(loaded_data[nrow(loaded_data), ]))) {
+        loaded_data <- loaded_data[-nrow(loaded_data), ]
+      }
+      loaded_data <- loaded_data[, colSums(!is.na(loaded_data)) > 0]
+
+      rv_local$loaded_data <- data.frame(loaded_data)
 
       # check document fits the general requirements
       if (ncol(rv_local$loaded_data) >= 10) {
@@ -264,7 +272,7 @@ mod_modal_upload_server <- function(id, rv, x) {
       )
 
       # Build drop down columns using HTML
-      names_choices <- c("absent", colnames(rv_local$loaded_data))
+      names_choices <- c("missing", colnames(rv_local$loaded_data))
 
       df$column <- vapply(df$Name, function(var_name) {
         soccatoa::render_select(paste0("select_", var_name), names_choices)
@@ -318,9 +326,17 @@ mod_modal_upload_server <- function(id, rv, x) {
         S_cz = input$dropdown_values$select_S_cz
       )
 
-      # absent to NA
+      my_columns_unit <- list(
+        z = input$dropdown_values$unit_select_z,
+        d = input$dropdown_values$unit_select_d,
+        rho_fe = input$dropdown_values$unit_select_rho_fe,
+        f_c = input$dropdown_values$unit_select_f_c,
+        S_cz = input$dropdown_values$unit_select_S_cz
+      )
+
+      # missing to NA
       my_columns <- lapply(my_columns, function(x) {
-        if (identical(x, "absent")) NA else x
+        if (identical(x, "missing")) NA else x
       })
 
       # if not NA check they are in the right format
@@ -338,10 +354,10 @@ mod_modal_upload_server <- function(id, rv, x) {
 
         # if right format
         if (numeric_check && character_check) {
-          # adjust to unit (T.B.D.)
 
+          # match unit of the DB
+          rv_local$loaded_data <- get_standard_unit(my_columns, my_columns_unit, rv_local$loaded_data)
           # # rename the columns
-
           output_cols <- c("survey", "site_id", "z", "d", "rho_fe", "f_c", "S_cz")
 
           df_selected <- data.frame(row.names = seq_len(nrow(rv_local$loaded_data)))
@@ -353,7 +369,7 @@ mod_modal_upload_server <- function(id, rv, x) {
               # Assign a column of NAs — automatically fills to correct length
               df_selected[[colname]] <- NA
             } else {
-              # Assign the appropriate column from the dataset
+              # Assign the appropriate column from the data set
               df_selected[[colname]] <- rv_local$loaded_data[[input_col]]
             }
           }
@@ -397,11 +413,11 @@ mod_modal_upload_server <- function(id, rv, x) {
         fluidRow(
           column(
             5,
-            selectInput(ns("col_lon"), "Column with lon/X", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "", width = "100%")
+            selectInput(ns("col_lon"), "lon/easting", choices = c("missing" = "", colnames(rv_local$loaded_data)), selected = "", width = "100%")
           ),
           column(
             5,
-            selectInput(ns("col_lat"), "Column with lat/Y", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "", width = "100%")
+            selectInput(ns("col_lat"), "lat/northing", choices = c("missing" = "", colnames(rv_local$loaded_data)), selected = "", width = "100%")
           )
         )
       )
@@ -412,15 +428,15 @@ mod_modal_upload_server <- function(id, rv, x) {
         fluidRow(
           column(
             4,
-            selectInput(ns("col_day"), "Column with day", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+            selectInput(ns("col_day"), "day", choices = c("missing" = "", colnames(rv_local$loaded_data)), selected = "")
           ),
           column(
             4,
-            selectInput(ns("col_month"), "Column with month", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+            selectInput(ns("col_month"), "month", choices = c("missing" = "", colnames(rv_local$loaded_data)), selected = "")
           ),
           column(
             4,
-            selectInput(ns("col_year"), "Column with year", choices = c("absent" = "", colnames(rv_local$loaded_data)), selected = "")
+            selectInput(ns("col_year"), "year", choices = c("missing" = "", colnames(rv_local$loaded_data)), selected = "")
           )
         )
       )
@@ -430,14 +446,14 @@ mod_modal_upload_server <- function(id, rv, x) {
       list(
         fluidRow(
           column(
-            3,
-            selectInput(ns("col_date"), "Column with the date", choices = c(
-              "absent" = "",
+            5,
+            selectInput(ns("col_date"), "date", choices = c(
+              "missing" = "",
               colnames(rv_local$loaded_data)
             ), selected = "")
           ),
           column(
-            3,
+            5,
             selectInput(ns("col_date_format"), "Format of the date", choices = c(
               "1969-01-28" = "%Y-%m-%d",
               "28/01/1969" = "%d/%m/%Y",
@@ -463,7 +479,7 @@ mod_modal_upload_server <- function(id, rv, x) {
         date = input$col_date
       )
 
-      # absents to NA
+      # missings to NA
       the_columns <- lapply(the_columns, function(x) {
         if (identical(x, "")) NA else x
       })
@@ -560,11 +576,10 @@ mod_modal_upload_server <- function(id, rv, x) {
           } else {
 
             ##convert date into right format and extract the year
-            dates <- get_right_date_format(rv_local$loaded_data[[the_columns[["date"]] ]])
-
-            years  <-  format(dates, "%Y")
-            month  <-  format(dates, "%m")
-            day    <-  format(dates, "%d")
+            dates <- get_right_date_format(rv_local$loaded_data[[the_columns[["date"]] ]], input$col_date_format)
+            years  <- as.numeric(substr(dates, nchar(dates) - 3, nchar(dates)))
+            month  <-  as.numeric(substr(dates, 4, 5))
+            day    <-  as.numeric(substr(dates, 1, 2))
           }
 
           # add to df to load in db
