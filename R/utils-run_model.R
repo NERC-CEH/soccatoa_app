@@ -19,110 +19,108 @@ run_model_A <- function(df_loaded) {
 #' @return df_results
 #' @export
 #'
-run_model_B <- function(df_loaded, yrstart, yrend) {
-  model <- function(beta, gamma, dco2, dta) {
-    dscarb <- beta * dco2 + gamma * dta
-    return(dscarb)
+run_model_B <- function(yrstart, yrend) {
+  #' Random Gamma Distribution within a specified range
+  #'
+  #' Generates random numbers from a Gamma distribution within a specified range.
+  #'
+  #' @param n Number of observations to generate.
+  #' @param range A numeric vector of length 2 specifying the minimum and maximum values of the range.
+  #' @param shape Shape parameter of the Gamma distribution.
+  #' @param rate Rate parameter of the Gamma distribution. Defaults to 1.
+  #'
+  #' @return A numeric vector of length `n` containing random numbers from a Gamma distribution within the specified range.
+  #'
+  #' @examples
+  #' set.seed(123)
+  #' rgammat(10, range = c(0, 10), shape = 2, rate = 1)
+  rgammat <- function(n, range, shape, rate = 1) {
+    F.a <- pgamma(min(range), shape = shape, rate = rate)
+    F.b <- pgamma(max(range), shape = shape, rate = rate)
+
+    u <- runif(n, min = F.a, max = F.b)
+    qgamma(u, shape = shape, rate = rate)
+  }
+  #' Calculate the change in soil carbon and its uncertainty arising from change
+  #' in CO2 and temperature.
+  #'
+  #' This function calculates the change in soil carbon stock from the start year
+  #' to the end year, and its standard deviation, given the parameters
+  #' describing the sensitivity of SOC to change in CO2 and temperature.
+  #'
+  #' @param n_sim The number of simulations to run (default: 10)
+  #' @param S_c_start The initial soil carbon stock (default: 10 kg C m^-2)
+  #' @param start_year The starting year for the calculation (default: 2025)
+  #' @param end_year The ending year for the calculation (default: 2050)
+  #' @param this_scenario The climate scenario to use (default: "RCP2.6")
+  #' @param shape The shape parameter for the gamma distribution (default: 3.920758)
+  #' @param rate The rate parameter for the gamma distribution (default: 1371.239)
+  #' @param intercept The intercept for the linear relationship between beta and gamma (default: 0.004518087)
+  #' @param slope The slope for the linear relationship between beta and gamma (default: -3.611591834)
+  #' @param sigma The standard deviation for the normal distribution of residuals (default: 0.007210343)
+  #'
+  #' @return A list with two elements:
+  #'   \item{sigma}{The standard deviation of the estimated soil carbon stock in the end year}
+  #'   \item{p}{A ggplot object showing the distribution of predicted soil carbon stocks}
+  #'
+  #' @examples
+  #' \dontrun{
+  #' x <- get_co2climate_effect(
+  #'   n_sim = 10000,
+  #'   start_year = 2025,
+  #'   end_year = 2050,
+  #'   this_scenario = "RCP8.5"
+  #' )
+  #' }
+  get_co2climate_effect <- function(
+    n_sim = 10,
+    S_c_start = 10,
+    start_year = 2025,
+    end_year = 2050,
+    this_scenario = c("RCP2.6", "RCP4.5", "RCP6.0", "RCP8.5"),
+    shape = 3.920758,
+    rate = 1371.239,
+    intercept = 0.004518087,
+    slope = -3.611591834,
+    sigma = 0.007210343,
+    maxbeta
+  ) {
+    this_scenario <- match.arg(this_scenario)
+    co2_start <- df_scenario$co2[df_scenario$year == start_year & df_scenario$scenario == this_scenario]
+    co2_end <- df_scenario$co2[df_scenario$year == end_year & df_scenario$scenario == this_scenario]
+    dco2 <- co2_end - co2_start
+    ta_start <- df_scenario$ta[df_scenario$year == start_year & df_scenario$scenario == this_scenario]
+    ta_end <- df_scenario$ta[df_scenario$year == end_year & df_scenario$scenario == this_scenario]
+    dta <- ta_end - ta_start
+
+    v_beta <- rgammat(
+      n = n_sim,
+      range = c(0, maxbeta),
+      shape = shape,
+      rate = rate
+    )
+
+    # force to be always negative
+    v_gamma <- -1 * abs(intercept + slope * v_beta + rnorm(n_sim, 0, sigma))
+    v_dc <- v_beta * dco2 + v_gamma * dta
+    v_S_c_end <- S_c_start + v_dc
+
+    return(v_S_c_end)
   }
 
-  chcarb <- function(nsamples, beta_mn, beta_sd, gamma_mn, gamma_sd, dco2, dta) {
-    betas <- rnorm(nsamples, mean = beta_mn, sd = beta_sd)
-    gammas <- rnorm(nsamples, mean = gamma_mn, sd = gamma_sd)
+  df_gamma <- read.csv("data-raw/files/df_gamma.csv")
 
-    df <- data.frame(beta = betas, gamma = gammas, dco2 = dco2, dta = dta)
-    chcarb <- model(beta = df$beta, gamma = df$gamma, dco2 = df$dco2, dta = df$dta)
-    df <- cbind(df, chcarb)
-
-    return(df)
-  }
-
-  calc_betagamma <- function(n) {
-    cat(n, "times co2", "\n")
-
-    n_years <- 140
-    co2 <- 285 * (1.01^(0:(n_years - 1)))
-    co2ratio <- co2 / 285
-    i_index <- which.min(abs(co2ratio - n))
-    deltaCO2 <- co2[i_index] - co2[1]
-
-    cmip4 <- c("1pctCO2-bgc", "1pctCO2-rad")
-
-    ## Beta calc
-    filename <- paste0("data-raw/files/Csdata_", cmip4[1], "_annual_global.csv")
-    Cs_data <- read.csv(filename)
-
-    beta <- colMeans(Cs_data[(i_index - 4):(i_index), , drop = FALSE], na.rm = TRUE) - colMeans(Cs_data[1:5, , drop = FALSE], na.rm = TRUE)
-    beta <- beta / deltaCO2
-    mean_beta <- mean(beta)
-    std_beta <- sd(beta)
-
-    ## Gamma calc
-    filename <- paste0("data-raw/files/Csdata_", cmip4[2], "_annual_global.csv")
-    Cs_data <- read.csv(filename)
-
-    filename <- paste0("data-raw/files/tasdata_", cmip4[2], "_annual_global.csv")
-    tas_data <- read.csv(filename)
-
-    gamma <- colMeans(Cs_data[(i_index - 4):(i_index), , drop = FALSE], na.rm = TRUE) - colMeans(Cs_data[1:5, , drop = FALSE], na.rm = TRUE)
-    deltatas <- colMeans(tas_data[(i_index - 4):(i_index), , drop = FALSE], na.rm = TRUE) - colMeans(tas_data[1:5, , drop = FALSE], na.rm = TRUE)
-    gamma <- gamma / deltatas
-
-    mean_gamma <- mean(gamma)
-    std_gamma <- sd(gamma)
-
-    return(data.frame(beta_mn = mean_beta, beta_sd = std_beta, gamma_mn = mean_gamma, gamma_sd = std_gamma))
-  }
-
-  # yrstart = '2010'
-  # yrend   = '2090'
-
-  yrstart <- yrstart
-  yrend <- yrend
-  rcp <- "RCP6.0"
-  nsamples <- 10000
-
-  cat("start year:", yrstart, "end year:", yrend, "\n")
-  cat("rcp scenario:", rcp, "\n")
-
-  dtco2 <- read.table("data-raw/files/AR5-RCP-CO2.tsv", header = TRUE, sep = "\t")
-  dttemp <- read.csv("data-raw/files/AR5-RCP-TAS-50.csv", skip = 1)
-
-  dco2_s <- dtco2[dtco2$Year == yrstart, rcp]
-  dco2_e <- dtco2[dtco2$Year == yrend, rcp]
-  rco2 <- dco2_e / dco2_s
-  dco2 <- dco2_e - dco2_s
-
-  dta <- dttemp[dttemp$Year == yrend, rcp] - dttemp[dttemp$Year == yrstart, rcp]
-
-  param <- calc_betagamma(n = rco2)
-  soil <- chcarb(
-    nsamples = nsamples,
-    beta_mn = param$beta_mn, beta_sd = param$beta_sd,
-    gamma_mn = param$gamma_mn, gamma_sd = param$gamma_sd,
-    dco2 = dco2, dta = dta
+  l_sigma <- get_co2climate_effect(
+    n_sim = 10000,
+    start_year = 2025,
+    end_year = 2050,
+    this_scenario = "RCP8.5",
+    shape = df_gamma$shape,
+    rate = df_gamma$rate,
+    intercept = df_gamma$intercept,
+    slope = df_gamma$slope,
+    sigma = df_gamma$sigma,
+    maxbeta = df_gamma$maxbeta
   )
-
-  # for units of g per m2 per yr
-  nyrs <- as.numeric(yrend) - as.numeric(yrstart)
-  # 510000000 globe total sq km
-  # 148000000 land sq km
-  # 1 square kilometer (km²) = 1,000,000 square meters (m²)
-
-  area <- 148000000 * 1000000
-  divunit <- area * nyrs
-  mulunit <- 1E15
-
-  ch_soilcarb <- soil$chcarb * (mulunit / divunit)
-  # summary(ch_soilcarb)
-
-  # read in site data
-  # model_result <- soccatoa::example_output
-
-  # soil carbon model in stan written by Dave Miller
-  # this is a place holder
-  soilCarb <- 50 * rnorm(nsamples, mean = 1.0, sd = 0.1)
-
-  soilCarb <- soilCarb - ch_soilcarb
-
-  return(soilCarb)
+  return(l_sigma)
 }
