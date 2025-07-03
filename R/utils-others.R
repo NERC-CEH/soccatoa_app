@@ -123,3 +123,12 @@ get_standard_unit <- function (my_columns, my_columns_unit, loaded_data){
 }
 
 
+#' clean_input
+#' @description makes blank input values ("") and NULL and "missing" into NAs
+#' @param x an input value
+#' @return NA if input is "" or NULL or "missing", otherwise returns x
+#' @export
+#'
+clean_input <- function(x) {
+  if (is.null(x) || identical(x, "") || identical(tolower(x), "missing")) NA else x
+}
