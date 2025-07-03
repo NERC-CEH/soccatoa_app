@@ -86,11 +86,19 @@ run_model_B <- function(yrstart, yrend) {
     maxbeta
   ) {
     this_scenario <- match.arg(this_scenario)
-    co2_start <- df_scenario$co2[df_scenario$year == start_year & df_scenario$scenario == this_scenario]
-    co2_end <- df_scenario$co2[df_scenario$year == end_year & df_scenario$scenario == this_scenario]
+    co2_start <- df_scenario$co2[
+      df_scenario$year == start_year & df_scenario$scenario == this_scenario
+    ]
+    co2_end <- df_scenario$co2[
+      df_scenario$year == end_year & df_scenario$scenario == this_scenario
+    ]
     dco2 <- co2_end - co2_start
-    ta_start <- df_scenario$ta[df_scenario$year == start_year & df_scenario$scenario == this_scenario]
-    ta_end <- df_scenario$ta[df_scenario$year == end_year & df_scenario$scenario == this_scenario]
+    ta_start <- df_scenario$ta[
+      df_scenario$year == start_year & df_scenario$scenario == this_scenario
+    ]
+    ta_end <- df_scenario$ta[
+      df_scenario$year == end_year & df_scenario$scenario == this_scenario
+    ]
     dta <- ta_end - ta_start
 
     v_beta <- rgammat(

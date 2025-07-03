@@ -11,7 +11,10 @@ mod_feedback_ui <- function(id) {
   ns <- NS(id)
   tagList(
     p(lorem::ipsum(2), style = "text-align:justify;"),
-    p(tagList(shiny::icon("envelope"), "Your e-mail@ceh.ac.uk"), style = "font-weight: bold;"),
+    p(
+      tagList(shiny::icon("envelope"), "Your e-mail@ceh.ac.uk"),
+      style = "font-weight: bold;"
+    ),
   )
 }
 

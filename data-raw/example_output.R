@@ -13,5 +13,4 @@ colnames(dt_soilc)[6] <- "northing"
 example_output <- dt_soilc[which(!is.na(dt_soilc$S_cz)), ]
 
 
-
 usethis::use_data(example_output, overwrite = TRUE)

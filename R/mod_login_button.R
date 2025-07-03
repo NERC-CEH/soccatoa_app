@@ -33,10 +33,7 @@ mod_login_button_ui <- function(id) {
       )
     ),
     fluidRow(
-      column(4,
-        offset = 4,
-        uiOutput(ns("login_button"))
-      )
+      column(4, offset = 4, uiOutput(ns("login_button")))
     )
   )
 }
@@ -63,21 +60,24 @@ mod_login_button_server <- function(id, rv, x) {
       }
     })
 
-
     #### login or logout button
     output$login_button <- renderUI({
       if (rv$logged_in == TRUE) {
-        actionButton(ns("login_account"),
+        actionButton(
+          ns("login_account"),
           label = "logout",
           # list(icon("door-closed"),"logout"),
-          class = "btn-logout", width = "100%",
+          class = "btn-logout",
+          width = "100%",
           style = "font-size:110%; padding: 5px; margin-right: auto;"
         )
       } else {
-        actionButton(ns("login_account"),
+        actionButton(
+          ns("login_account"),
           label = "login",
           # list(icon("door-open"),"login"),
-          class = "btn-login", width = "100%",
+          class = "btn-login",
+          width = "100%",
           style = "font-size:110%; padding: 5px; margin-right: auto;"
         )
       }
@@ -89,16 +89,34 @@ mod_login_button_server <- function(id, rv, x) {
       modalDialog(
         tagList(
           h2("Login"),
-          textInput(ns("username"), label = "username", value = "", width = "100%"),
-          textInput(ns("password"), label = "password", value = "", width = "100%"),
-          actionButton(ns("login"), "login",
+          textInput(
+            ns("username"),
+            label = "username",
+            value = "",
+            width = "100%"
+          ),
+          textInput(
+            ns("password"),
+            label = "password",
+            value = "",
+            width = "100%"
+          ),
+          actionButton(
+            ns("login"),
+            "login",
             # list(icon("door-open"),"login"),
-            class = "btn-login", width = "100%", style = "font-size:110%; padding: 5px; margin-right: auto;"
+            class = "btn-login",
+            width = "100%",
+            style = "font-size:110%; padding: 5px; margin-right: auto;"
           ),
           uiOutput(ns("validating_psw")),
           div(
             style = "display: flex; justify-content: space-between; width: 100%;",
-            actionLink(ns("register_link"), "I am new here!", style = "text-decoration: underline;") # ,
+            actionLink(
+              ns("register_link"),
+              "I am new here!",
+              style = "text-decoration: underline;"
+            ) # ,
             # p("I forgot my password", style = "text-decoration: underline;")
           )
         ),
@@ -109,22 +127,31 @@ mod_login_button_server <- function(id, rv, x) {
       )
     }
 
-    observeEvent(input$login_account, ignoreInit = T, label = "when login/logout button is clcked", {
-      # IF YOU ARE LOGGED IN LOGOUT
-      if (rv$logged_in == TRUE) {
-        rv$logged_in <- FALSE
-        rv$page_showing <- "logged_out"
+    observeEvent(
+      input$login_account,
+      ignoreInit = T,
+      label = "when login/logout button is clcked",
+      {
+        # IF YOU ARE LOGGED IN LOGOUT
+        if (rv$logged_in == TRUE) {
+          rv$logged_in <- FALSE
+          rv$page_showing <- "logged_out"
 
-        # back to home
-        updateNavbarPage(session = x, inputId = "main_navbar", selected = "SOCCATOA")
+          # back to home
+          updateNavbarPage(
+            session = x,
+            inputId = "main_navbar",
+            selected = "SOCCATOA"
+          )
 
-        rv$user <- NA
-        rv_local$username_h <- NA
-        # IF YOU ARE LOGGED OUT LOGIN
-      } else {
-        showModal(login_modal())
+          rv$user <- NA
+          rv_local$username_h <- NA
+          # IF YOU ARE LOGGED OUT LOGIN
+        } else {
+          showModal(login_modal())
+        }
       }
-    })
+    )
 
     observeEvent(input$login, label = "login", {
       # check username exists
@@ -165,7 +192,11 @@ mod_login_button_server <- function(id, rv, x) {
           rv_local$username_h <- input$username
 
           # go to page
-          updateNavbarPage(session = x, inputId = "main_navbar", selected = "SOCCATOA")
+          updateNavbarPage(
+            session = x,
+            inputId = "main_navbar",
+            selected = "SOCCATOA"
+          )
 
           # Close the modal after successful login
           removeModal()
@@ -188,16 +219,37 @@ mod_login_button_server <- function(id, rv, x) {
       modalDialog(
         tagList(
           h2("Create your account"),
-          textInput(ns("username_register"), label = "username", value = "", width = "100%"),
-          textInput(ns("password_register"), label = "password", value = "", width = "100%"),
-          selectInput(ns("use"), "main purpose", choices = c(
-            "Select a use" = "",
-            "consultancy", "research", "other"
-          ), width = "100%"),
+          textInput(
+            ns("username_register"),
+            label = "username",
+            value = "",
+            width = "100%"
+          ),
+          textInput(
+            ns("password_register"),
+            label = "password",
+            value = "",
+            width = "100%"
+          ),
+          selectInput(
+            ns("use"),
+            "main purpose",
+            choices = c(
+              "Select a use" = "",
+              "consultancy",
+              "research",
+              "other"
+            ),
+            width = "100%"
+          ),
           p("by clicking registering you agree to ..... blah blah blah"),
-          actionButton(ns("register_user"), "register me",
+          actionButton(
+            ns("register_user"),
+            "register me",
             # list(icon("address-card"),"register me"),
-            class = "btn-login", width = "100%", style = "font-size:110%; padding: 5px; margin-right: auto;"
+            class = "btn-login",
+            width = "100%",
+            style = "font-size:110%; padding: 5px; margin-right: auto;"
           ),
           uiOutput(ns("validating_newuser"))
         ),
@@ -213,52 +265,75 @@ mod_login_button_server <- function(id, rv, x) {
       showModal(register_modal())
     })
 
-    observeEvent(input$register_user, ignoreInit = T, label = "when register account is clicked", {
-      ## check all the fields are filled
-      if (!is.null(input$username_register) && !is.null(input$password_register) &&
-        input$use != "" && input$username_register != "" && input$password_register != "") {
-        # check username isn't already existing
-        load(paste0(here::here(), "/data/accounts.rda"))
+    observeEvent(
+      input$register_user,
+      ignoreInit = T,
+      label = "when register account is clicked",
+      {
+        ## check all the fields are filled
+        if (
+          !is.null(input$username_register) &&
+            !is.null(input$password_register) &&
+            input$use != "" &&
+            input$username_register != "" &&
+            input$password_register != ""
+        ) {
+          # check username isn't already existing
+          load(paste0(here::here(), "/data/accounts.rda"))
 
-        if (c(digest::digest(input$username_register, algo = "md5")) %in% accounts$username) {
-          output$validating_newuser <- renderUI({
-            p("Username already in use", style = "color: #F18968;")
-          })
+          if (
+            c(digest::digest(input$username_register, algo = "md5")) %in%
+              accounts$username
+          ) {
+            output$validating_newuser <- renderUI({
+              p("Username already in use", style = "color: #F18968;")
+            })
+          } else {
+            new_user <- data.frame(
+              "username" = digest::digest(
+                input$username_register,
+                algo = "md5"
+              ),
+              "password" = digest::digest(
+                input$password_register,
+                algo = "md5"
+              ),
+              "use" = input$use,
+              "date_registered" = Sys.Date()
+            )
+
+            accounts <- rbind(accounts, new_user)
+
+            # print(accounts)
+
+            save(accounts, file = paste0(here::here(), "/data/accounts.rda"))
+
+            output$validating_newuser <- renderUI({
+              p("Account created successfully", style = "color: #58BAC1;")
+            })
+
+            rv$logged_in <- TRUE
+            rv$page_showing <- "logged_in"
+
+            # go to page
+            updateNavbarPage(
+              session = x,
+              inputId = "main_navbar",
+              selected = "SOCCATOA"
+            )
+
+            rv$user <- new_user$username
+            rv_local$username_h <- input$username_register
+
+            removeModal()
+          }
         } else {
-          new_user <- data.frame(
-            "username" = digest::digest(input$username_register, algo = "md5"),
-            "password" = digest::digest(input$password_register, algo = "md5"),
-            "use" = input$use,
-            "date_registered" = Sys.Date()
-          )
-
-          accounts <- rbind(accounts, new_user)
-
-          # print(accounts)
-
-          save(accounts, file = paste0(here::here(), "/data/accounts.rda"))
-
           output$validating_newuser <- renderUI({
-            p("Account created successfully", style = "color: #58BAC1;")
+            p("Must provide all the fields", style = "color: #F18968;")
           })
-
-          rv$logged_in <- TRUE
-          rv$page_showing <- "logged_in"
-
-          # go to page
-          updateNavbarPage(session = x, inputId = "main_navbar", selected = "SOCCATOA")
-
-          rv$user <- new_user$username
-          rv_local$username_h <- input$username_register
-
-          removeModal()
         }
-      } else {
-        output$validating_newuser <- renderUI({
-          p("Must provide all the fields", style = "color: #F18968;")
-        })
       }
-    })
+    )
 
     # close
   })
