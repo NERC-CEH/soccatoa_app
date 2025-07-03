@@ -8,7 +8,8 @@ convert_coordinates <- function(dt) {
   # First, check if coordinates are in BNG or WGS84
   dt <- dt %>%
     dplyr::mutate(
-      coordinate_system = ifelse(lon >= -180 & lon <= 180 & lat >= -90 & lat <= 90,
+      coordinate_system = ifelse(
+        lon >= -180 & lon <= 180 & lat >= -90 & lat <= 90,
         "WGS84",
         "BNG"
       )
@@ -19,7 +20,8 @@ convert_coordinates <- function(dt) {
   dt <- dt %>%
     dplyr::rowwise() %>%
     dplyr::mutate(
-      lon_wgs84 = ifelse(coordinate_system == "BNG",
+      lon_wgs84 = ifelse(
+        coordinate_system == "BNG",
         {
           # Transform BNG (EPSG: 27700) to WGS84 (EPSG: 4326)
           point_bng <- sf::st_point(c(lon, lat))
@@ -29,7 +31,8 @@ convert_coordinates <- function(dt) {
         },
         lon
       ),
-      lat_wgs84 = ifelse(coordinate_system == "BNG",
+      lat_wgs84 = ifelse(
+        coordinate_system == "BNG",
         {
           point_bng <- sf::st_point(c(lon, lat))
           point_bng_sf <- sf::st_sfc(point_bng, crs = 27700)
@@ -49,8 +52,12 @@ dt_soilc_converted <- convert_coordinates(dt_soilc)
 dt_soilc_converted <- dt_soilc_converted[, -c(5:6)]
 
 
-colnames(dt_soilc_converted)[which(colnames(dt_soilc_converted) == "lon_wgs84")] <- "lon"
-colnames(dt_soilc_converted)[which(colnames(dt_soilc_converted) == "lat_wgs84")] <- "lat"
+colnames(dt_soilc_converted)[which(
+  colnames(dt_soilc_converted) == "lon_wgs84"
+)] <- "lon"
+colnames(dt_soilc_converted)[which(
+  colnames(dt_soilc_converted) == "lat_wgs84"
+)] <- "lat"
 
 dt_soilc_converted <- dplyr::filter(
   dt_soilc_converted,
@@ -58,11 +65,11 @@ dt_soilc_converted <- dplyr::filter(
 )
 
 
-write.csv(dt_soilc_converted,
+write.csv(
+  dt_soilc_converted,
   file = here::here("data-raw/files/soccatoa_input_2.csv"),
   row.names = FALSE
 )
-
 
 # dt_soilc <- dplyr::filter(dt_soilc,
 #                           survey == "Easter Bush",

@@ -22,7 +22,8 @@ mod_select_sites_ui <- function(id) {
       column(
         3,
         br(),
-        actionButton(ns("select_data"),
+        actionButton(
+          ns("select_data"),
           label = "use these sites",
           width = "100%",
           class = "btn-info"
@@ -32,8 +33,12 @@ mod_select_sites_ui <- function(id) {
       column(
         3,
         br(),
-        actionButton(ns("upload_data"),
-          label = div(icon("database", lib = "font-awesome"), "upload your dataset"),
+        actionButton(
+          ns("upload_data"),
+          label = div(
+            icon("database", lib = "font-awesome"),
+            "upload your dataset"
+          ),
           width = "100%",
           class = "btn-upload"
         )
@@ -69,10 +74,19 @@ mod_select_sites_ui <- function(id) {
             # class = "p-0",
             bslib::card_body(
               p(lorem::ipsum(1, 2), style = "text-align:justify;"),
-              downloadButton(ns("download_documentation"), "Download documenntation", class = "btn-info", width = "100%", style = "font-size:100%"),
-              actionButton(ns("model_output"),
+              downloadButton(
+                ns("download_documentation"),
+                "Download documenntation",
+                class = "btn-info",
+                width = "100%",
+                style = "font-size:100%"
+              ),
+              actionButton(
+                ns("model_output"),
                 label = div(icon("computer", lib = "font-awesome"), "run"),
-                width = "100%", style = "margin-right: auto; font-size:100%;", class = "btn-run"
+                width = "100%",
+                style = "margin-right: auto; font-size:100%;",
+                class = "btn-run"
               )
             )
           )
@@ -112,8 +126,6 @@ mod_select_sites_server <- function(id, rv, x) {
     })
     outputOptions(output, "panelCondition_wrongfile", suspendWhenHidden = FALSE)
 
-
-
     #######################################################
     ############ optional step: uploading your own data ###
     #######################################################
@@ -134,12 +146,21 @@ mod_select_sites_server <- function(id, rv, x) {
       showModal(upload_dataset_modal())
     })
 
-    observeEvent(rv$selected_sites_upload, label = "when db is updated, automatically select the new data", {
-      if (!is.null(rv$selected_sites_upload)) {
-        load(here::here("data/all_data.rda"))
-        updateSelectizeInput(session = session, inputId = "sites_picker", selected = sort(rv$selected_sites_upload), choices = sort(all_data$site_id))
+    observeEvent(
+      rv$selected_sites_upload,
+      label = "when db is updated, automatically select the new data",
+      {
+        if (!is.null(rv$selected_sites_upload)) {
+          load(here::here("data/all_data.rda"))
+          updateSelectizeInput(
+            session = session,
+            inputId = "sites_picker",
+            selected = sort(rv$selected_sites_upload),
+            choices = sort(all_data$site_id)
+          )
+        }
       }
-    })
+    )
 
     #######################################################
     ############ when sites to run are selected ###########
@@ -156,62 +177,88 @@ mod_select_sites_server <- function(id, rv, x) {
       if (nrow(all_data) > 0) {
         return(
           list(
-            selectizeInput(ns("sites_picker"),
+            selectizeInput(
+              ns("sites_picker"),
               label = "Sites available in the database:",
-              choices = sort(unique(all_data$site_id)), multiple = TRUE, width = "100%"
+              choices = sort(unique(all_data$site_id)),
+              multiple = TRUE,
+              width = "100%"
             )
           )
         )
       } else {
         return(list(
-          selectizeInput(ns("sites_picker"),
+          selectizeInput(
+            ns("sites_picker"),
             label = "Sites available in the database:",
-            choices = NULL, multiple = TRUE, width = "80%"
+            choices = NULL,
+            multiple = TRUE,
+            width = "80%"
           ),
-          p("The database seems empty at the moment, please upload your dataset", style = "text-align:justify;")
+          p(
+            "The database seems empty at the moment, please upload your dataset",
+            style = "text-align:justify;"
+          )
         ))
       }
     })
 
-    observeEvent(input$select_data, label = "when selected which sites to run update rv", {
-      if (is.null(input$sites_picker)) {
-        rv_local$file_status <- "none"
-        # display why it is not doing anything
-        output$warning_no_sites <- renderUI({
-          return(p("no sites selected; must select at least one to proceed"))
-        })
-      } else {
-        # remove warning (if it was there)
+    observeEvent(
+      input$select_data,
+      label = "when selected which sites to run update rv",
+      {
+        if (is.null(input$sites_picker)) {
+          rv_local$file_status <- "none"
+          # display why it is not doing anything
+          output$warning_no_sites <- renderUI({
+            return(p("no sites selected; must select at least one to proceed"))
+          })
+        } else {
+          # remove warning (if it was there)
+          output$warning_no_sites <- renderUI({
+            return(NULL)
+          })
+
+          # load the data
+          load(here::here("data/all_data.rda"))
+
+          rv$my_data <-
+            all_data %>%
+            dplyr::filter(site_id %in% input$sites_picker) %>%
+            sf::st_as_sf(coords = c("lon", "lat"), crs = 4326)
+
+          rv_local$file_status <- "right"
+        }
+      }
+    )
+
+    observeEvent(
+      input$sites_picker,
+      label = "remove warning and reset if a selection is made",
+      {
         output$warning_no_sites <- renderUI({
           return(NULL)
         })
-
-        # load the data
-        load(here::here("data/all_data.rda"))
-
-        rv$my_data <-
-          all_data %>%
-          dplyr::filter(site_id %in% input$sites_picker) %>%
-          sf::st_as_sf(coords = c("lon", "lat"), crs = 4326)
-
-        rv_local$file_status <- "right"
+        rv_local$file_status <- "none"
       }
-    })
-
-    observeEvent(input$sites_picker, label = "remove warning and reset if a selection is made", {
-      output$warning_no_sites <- renderUI({
-        return(NULL)
-      })
-      rv_local$file_status <- "none"
-    })
-
+    )
 
     output$map <- leaflet::renderLeaflet({
       if (isTruthy(rv$my_data)) {
         # clean the data to use on map
         data <-
           rv$my_data %>%
-          dplyr::select(survey, site_id, year, z, d, rho_fe, f_c, S_cz, geometry) %>%
+          dplyr::select(
+            survey,
+            site_id,
+            year,
+            z,
+            d,
+            rho_fe,
+            f_c,
+            S_cz,
+            geometry
+          ) %>%
           dplyr::group_by(site_id, geometry) %>%
           dplyr::summarise(
             year = if (min(year) == max(year)) {
@@ -229,19 +276,53 @@ mod_select_sites_server <- function(id, rv, x) {
           )
 
         # palette
-        colors <- rep(c("#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"),
+        colors <- rep(
+          c(
+            "#FF7F0E",
+            "#2CA02C",
+            "#D62728",
+            "#9467BD",
+            "#8C564B",
+            "#E377C2",
+            "#7F7F7F",
+            "#BCBD22",
+            "#17BECF"
+          ),
           length.out = length(unique(data$site_id))
         )
-        site_palette <- leaflet::colorFactor(palette = colors, domain = data$site_id)
+        site_palette <- leaflet::colorFactor(
+          palette = colors,
+          domain = data$site_id
+        )
 
         # Map
         leaflet::leaflet() %>%
-          htmlwidgets::onRender("function(el, x) {this.zoomControl.setPosition('bottomright');}") %>%
+          htmlwidgets::onRender(
+            "function(el, x) {this.zoomControl.setPosition('bottomright');}"
+          ) %>%
           # the maps background
-          leaflet::addProviderTiles("Esri.WorldImagery", group = "Esri.WorldImagery", options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE)) %>%
-          leaflet::addProviderTiles("OpenStreetMap.Mapnik", options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE), group = "Streets") %>%
-          leaflet::addProviderTiles("Esri.WorldImagery", options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE), group = "Satellite") %>%
-          leaflet::addLayersControl(baseGroups = c("Streets", "Satellite"), options = leaflet::layersControlOptions(collapsed = T, position = "topright")) %>%
+          leaflet::addProviderTiles(
+            "Esri.WorldImagery",
+            group = "Esri.WorldImagery",
+            options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE)
+          ) %>%
+          leaflet::addProviderTiles(
+            "OpenStreetMap.Mapnik",
+            options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE),
+            group = "Streets"
+          ) %>%
+          leaflet::addProviderTiles(
+            "Esri.WorldImagery",
+            options = leaflet::providerTileOptions(zIndex = 0, noWrap = TRUE),
+            group = "Satellite"
+          ) %>%
+          leaflet::addLayersControl(
+            baseGroups = c("Streets", "Satellite"),
+            options = leaflet::layersControlOptions(
+              collapsed = T,
+              position = "topright"
+            )
+          ) %>%
           # add the markers of the dataset to run
           leaflet::addCircleMarkers(
             data = data,
@@ -249,14 +330,29 @@ mod_select_sites_server <- function(id, rv, x) {
             color = ~ site_palette(site_id),
             stroke = FALSE,
             popup = ~ paste0(
-              "<b>Survey:</b> ", survey, "<br>",
-              "<b>Site ID:</b> ", site_id, "<br>",
-              "<b>Year:</b> ", year, "<br>",
-              "<b>z:</b> ", z, "<br>",
-              "<b>d:</b> ", d, "<br>",
-              "<b>&rho;_fe:</b> ", rho_fe, "<br>",
-              "<b>f_c:</b> ", f_c, "<br>",
-              "<b>S_cz:</b> ", S_cz
+              "<b>Survey:</b> ",
+              survey,
+              "<br>",
+              "<b>Site ID:</b> ",
+              site_id,
+              "<br>",
+              "<b>Year:</b> ",
+              year,
+              "<br>",
+              "<b>z:</b> ",
+              z,
+              "<br>",
+              "<b>d:</b> ",
+              d,
+              "<br>",
+              "<b>&rho;_fe:</b> ",
+              rho_fe,
+              "<br>",
+              "<b>f_c:</b> ",
+              f_c,
+              "<br>",
+              "<b>S_cz:</b> ",
+              S_cz
             ),
             fillOpacity = 1
           ) # %>%
@@ -282,10 +378,24 @@ mod_select_sites_server <- function(id, rv, x) {
           dplyr::bind_cols(sf::st_coordinates(rv$my_data)) %>% # Extract longitude and latitude
           dplyr::rename(lon = X, lat = Y) %>% # Rename columns to 'lon' and 'lat'
           sf::st_drop_geometry() %>% # Drop the geometry column
-          dplyr::select(site_id, survey, day, month, year, lon, lat, z, d, rho_fe, f_c, S_cz) %>%
+          dplyr::select(
+            site_id,
+            survey,
+            day,
+            month,
+            year,
+            lon,
+            lat,
+            z,
+            d,
+            rho_fe,
+            f_c,
+            S_cz
+          ) %>%
           dplyr::mutate(dplyr::across(where(is.numeric), ~ round(.x, 3)))
 
-        DT::datatable(data_df,
+        DT::datatable(
+          data_df,
           options = list(
             pageLength = 3,
             searching = TRUE
@@ -306,18 +416,22 @@ mod_select_sites_server <- function(id, rv, x) {
         tagList(
           h2("select years to run"),
           fluidRow(
-            column(4,
-              offset = 2,
-              uiOutput(ns("year_start"))
-            ),
+            column(4, offset = 2, uiOutput(ns("year_start"))),
             column(
               4,
               uiOutput(ns("year_end"))
             )
           ),
-          fluidRow(column(8,
+          fluidRow(column(
+            8,
             offset = 2,
-            actionButton(inputId = ns("run_model"), label = div(icon("computer", lib = "font-awesome"), "run"), width = "100%", style = "margin-right: auto; font-size:100%;", class = "btn-run")
+            actionButton(
+              inputId = ns("run_model"),
+              label = div(icon("computer", lib = "font-awesome"), "run"),
+              width = "100%",
+              style = "margin-right: auto; font-size:100%;",
+              class = "btn-run"
+            )
           ))
         ),
         size = "l",
@@ -327,24 +441,32 @@ mod_select_sites_server <- function(id, rv, x) {
     }
 
     output$year_start <- renderUI({
-      selectizeInput(ns("year_start_filter"),
-        label = "year start", width = "100%",
+      selectizeInput(
+        ns("year_start_filter"),
+        label = "year start",
+        width = "100%",
         choices = c(unique(rv$my_data$year)),
         selected = min(unique(rv$my_data$year))
       )
     })
 
     output$year_end <- renderUI({
-      selectizeInput(ns("year_end_filter"),
-        label = "year end", width = "100%",
+      selectizeInput(
+        ns("year_end_filter"),
+        label = "year end",
+        width = "100%",
         choices = c(unique(rv$my_data$year)),
         selected = c(max(rv$my_data$year))
       )
     })
 
-    observeEvent(input$model_output, label = "show the modal to pick the years", {
-      showModal(run_modal())
-    })
+    observeEvent(
+      input$model_output,
+      label = "show the modal to pick the years",
+      {
+        showModal(run_modal())
+      }
+    )
 
     observeEvent(input$run_model, label = "run the model", {
       years <- c(
@@ -376,17 +498,18 @@ mod_select_sites_server <- function(id, rv, x) {
     output$download_documentation <- downloadHandler(
       filename = paste0("documentation_SOCCATOA", ".pdf", sep = ""),
       content = function(file) {
-        file.copy(here::here(
-          "inst/app/www/downloadables/documentation_facsimile.pdf"
-        ), file)
+        file.copy(
+          here::here(
+            "inst/app/www/downloadables/documentation_facsimile.pdf"
+          ),
+          file
+        )
       }
     )
 
     # close
   })
 }
-
-
 
 ## To be copied in the UI
 # mod_select_sites_ui("select_sites_1")

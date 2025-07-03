@@ -17,8 +17,10 @@ app_ui <- function(request) {
     warning = "#F49633",
     base_font = bslib::font_collection("Yummo", "Calibri")
   )
-  UKCEH_theme <- bslib::bs_add_variables(UKCEH_theme, "headings-font-weight" = 600)
-
+  UKCEH_theme <- bslib::bs_add_variables(
+    UKCEH_theme,
+    "headings-font-weight" = 600
+  )
 
   ### header
   bslib::page_navbar(
@@ -31,7 +33,10 @@ app_ui <- function(request) {
     tags$head(
       golem_add_external_resources(),
       waiter::use_waiter(),
-      waiter::waiter_on_busy(waiter::spin_hexdots(), color = waiter::transparent(.0))
+      waiter::waiter_on_busy(
+        waiter::spin_hexdots(),
+        color = waiter::transparent(.0)
+      )
     ),
 
     # MAIN PAGE WITH MODEL
@@ -59,23 +64,27 @@ app_ui <- function(request) {
     ),
     # FAQ
     bslib::nav_panel(
-      title = "FAQs", mod_faq_ui("faq_1"),
+      title = "FAQs",
+      mod_faq_ui("faq_1"),
       div(class = "footer", mod_footer_ui("footer_2"))
     ),
     # CONTACT US
     bslib::nav_panel(
-      title = "Contact us", mod_feedback_ui("feedback_1"),
+      title = "Contact us",
+      mod_feedback_ui("feedback_1"),
       div(class = "footer", mod_footer_ui("footer_4"))
     ),
     # TERMS OF USE
     bslib::nav_panel(
-      title = "Terms & Privacy", mod_terms_privacy_ui("terms_privacy_1"),
+      title = "Terms & Privacy",
+      mod_terms_privacy_ui("terms_privacy_1"),
       div(class = "footer", mod_footer_ui("footer_3"))
     ),
     # login or logout
     bslib::nav_spacer(),
     bslib::nav_panel(
-      title = mod_auth_ui("auth_1"), mod_login_button_ui("login_button_1"),
+      title = mod_auth_ui("auth_1"),
+      mod_login_button_ui("login_button_1"),
       div(class = "footer", mod_footer_ui("footer_5"))
     ),
   )

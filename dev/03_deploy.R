@@ -61,4 +61,3 @@ golem::add_dockerfile_with_renv_shinyproxy()
 ############## to deploy ##############################
 attachment::att_amend_desc()
 options(rsconnect.packrat = TRUE)
-
