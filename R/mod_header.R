@@ -13,12 +13,12 @@ mod_header_ui <- function(id) {
     fluidRow(
       column(
         2,
-        p(strong("SOCCATOA"), style = "font-size: 40px; color: #0483A4; padding-top: 5px; padding-left: 20px;")
+        p(
+          strong("SOCCATOA"),
+          style = "font-size: 40px; color: #0483A4; padding-top: 5px; padding-left: 20px;"
+        )
       ),
-      column(2,
-        offset = 8,
-        mod_login_button_ui("login_button_1")
-      )
+      column(2, offset = 8, mod_login_button_ui("login_button_1"))
     )
   )
 }

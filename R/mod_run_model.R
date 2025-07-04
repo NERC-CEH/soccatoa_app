@@ -10,7 +10,6 @@
 mod_run_model_ui <- function(id) {
   ns <- NS(id)
   tagList(
-
     # IF LOGGED OUT
     conditionalPanel(
       condition = "output.panelCondition_logged_out",
@@ -51,7 +50,11 @@ mod_run_model_server <- function(id, rv, x) {
     output$panelCondition_logged_out <- reactive({
       rv$page_showing == "logged_out"
     })
-    outputOptions(output, "panelCondition_logged_out", suspendWhenHidden = FALSE)
+    outputOptions(
+      output,
+      "panelCondition_logged_out",
+      suspendWhenHidden = FALSE
+    )
 
     output$panelCondition_logged_in <- reactive({
       rv$page_showing == "logged_in"

@@ -12,8 +12,18 @@ mod_footer_ui <- function(id) {
   tagList(
     div(
       class = "footer-logo-container",
-      img(src = "https://www.ceh.ac.uk/sites/default/files/images/theme/ukceh_logo_long_720x170_rgb.png", id = "ukceh", alt = "UKCEH logo", style = "height: 40px;vertical-align:middle; padding-left:15px; padding-right:15px;"),
-      img(src = "www/bioss.svg", id = "bioss", alt = "bioss logo", style = "height: 40px;vertical-align:middle; padding-left:15px; padding-right:15px;")
+      img(
+        src = "https://www.ceh.ac.uk/sites/default/files/images/theme/ukceh_logo_long_720x170_rgb.png",
+        id = "ukceh",
+        alt = "UKCEH logo",
+        style = "height: 40px;vertical-align:middle; padding-left:15px; padding-right:15px;"
+      ),
+      img(
+        src = "www/bioss.svg",
+        id = "bioss",
+        alt = "bioss logo",
+        style = "height: 40px;vertical-align:middle; padding-left:15px; padding-right:15px;"
+      )
     )
 
     # close

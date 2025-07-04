@@ -11,7 +11,14 @@ render_select <- function(id, choices) {
     return("")
   }
 
-  options <- paste0("<option value = ", choices, ">", choices, "</option>", collapse = "")
+  options <- paste0(
+    "<option value = ",
+    choices,
+    ">",
+    choices,
+    "</option>",
+    collapse = ""
+  )
   sprintf('<select id="%s" class="form-control">%s</select>', id, options)
 }
 
@@ -22,7 +29,6 @@ render_select <- function(id, choices) {
 #' @export
 #'
 get_unit_choices <- function(var_name) {
-
   units_choices <- list(
     length = c("m", "cm", "mm"),
     density = c("kg/m³", "g/cm³"),
@@ -31,7 +37,8 @@ get_unit_choices <- function(var_name) {
   )
 
   var_to_unit_category <- list(
-    z = "length", d = "length",
+    z = "length",
+    d = "length",
     rho_fe = "density",
     f_c = "carbon_fract",
     S_cz = "carbon"
@@ -53,17 +60,16 @@ get_unit_choices <- function(var_name) {
 #' @return the column values in date format d/%m/%Y
 #' @export
 #'
-get_right_date_format <- function(x, type){
-
+get_right_date_format <- function(x, type) {
   original_dates <- as.Date(x, format = type)
 
-  corrected_dates <- ifelse(is.na(original_dates), NA,
-                           format(original_dates, "%d/%m/%Y")
-                           )
-
+  corrected_dates <- ifelse(
+    is.na(original_dates),
+    NA,
+    format(original_dates, "%d/%m/%Y")
+  )
 
   return(corrected_dates)
-
 }
 
 #' get_standard_unit
@@ -75,12 +81,10 @@ get_right_date_format <- function(x, type){
 #' @export
 #'
 
-get_standard_unit <- function (my_columns, my_columns_unit, loaded_data){
-
+get_standard_unit <- function(my_columns, my_columns_unit, loaded_data) {
   corrected_units <- data.frame()
 
   for (unit_key in names(my_columns_unit)) {
-
     # column checked
     column_name <- my_columns[[unit_key]]
     #unit it is
@@ -89,37 +93,45 @@ get_standard_unit <- function (my_columns, my_columns_unit, loaded_data){
     values <- loaded_data[[column_name]]
 
     #Convert to unit used in DB
-    new_values <- switch(column_unit,
+    new_values <- switch(
+      column_unit,
 
-                         # Lengths all to meters
-                         "m"  = values,
-                         "cm" = as.numeric(units::set_units(units::set_units(values, cm), m)),
-                         "mm" = as.numeric(units::set_units(units::set_units(values, mm), m)),
+      # Lengths all to meters
+      "m" = values,
+      "cm" = as.numeric(units::set_units(units::set_units(values, cm), m)),
+      "mm" = as.numeric(units::set_units(units::set_units(values, mm), m)),
 
-                         # Densities all to kg/m³
-                         "kg/m³" = values,
-                         "g/cm³" = as.numeric(units::set_units(units::set_units(values, g/cm^3), kg/m^3)),
+      # Densities all to kg/m³
+      "kg/m³" = values,
+      "g/cm³" = as.numeric(units::set_units(
+        units::set_units(values, g / cm^3),
+        kg / m^3
+      )),
 
-                         # Fraction conversions
-                         "fraction" = values,
-                         "percent" = values/100,
-                         "g/kg (‰)" = values/1000,
+      # Fraction conversions
+      "fraction" = values,
+      "percent" = values / 100,
+      "g/kg (‰)" = values / 1000,
 
-                         # Mass per area to kg/m²
-                         "kg/m²"  = values,
-                         "ton/ha" = as.numeric(units::set_units(units::set_units(values, t/ha) ,  kg/m^2)),  # 1 ton/ha = 0.1 kg/m²
-                         "g/m²"   = as.numeric(units::set_units(units::set_units(values, g/m^2) ,  kg/m^2)),
+      # Mass per area to kg/m²
+      "kg/m²" = values,
+      "ton/ha" = as.numeric(units::set_units(
+        units::set_units(values, t / ha),
+        kg / m^2
+      )), # 1 ton/ha = 0.1 kg/m²
+      "g/m²" = as.numeric(units::set_units(
+        units::set_units(values, g / m^2),
+        kg / m^2
+      )),
 
-                         # in case is missing (shouldn't happen)
-                         values
-                         )
+      # in case is missing (shouldn't happen)
+      values
+    )
 
     loaded_data[[column_name]] <- new_values
-
   }
 
   return(loaded_data)
-
 }
 
 
@@ -130,5 +142,9 @@ get_standard_unit <- function (my_columns, my_columns_unit, loaded_data){
 #' @export
 #'
 clean_input <- function(x) {
-  if (is.null(x) || identical(x, "") || identical(tolower(x), "missing")) NA else x
+  if (is.null(x) || identical(x, "") || identical(tolower(x), "missing")) {
+    NA
+  } else {
+    x
+  }
 }

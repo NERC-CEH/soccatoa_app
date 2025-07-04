@@ -4,14 +4,14 @@
 \alias{run_model_B}
 \title{run_model_B}
 \usage{
-run_model_B(df_loaded, yrstart, yrend)
+run_model_B(yrstart, yrend)
 }
 \arguments{
-\item{df_loaded}{a df of data loaded}
-
 \item{yrstart}{start year}
 
 \item{yrend}{end year}
+
+\item{df_loaded}{a df of data loaded}
 }
 \value{
 df_results

@@ -9,3 +9,6 @@ $run_dev.*
 ^.here$
 ^app\.R$
 ^rsconnect$
+^[\.]?air\.toml$
+^\.vscode$
+^\.github$
