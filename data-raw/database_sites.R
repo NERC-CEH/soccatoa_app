@@ -1,5 +1,6 @@
 ## code to prepare `database_sites` dataset goes here
 
+#this created an empty dataset to start off. As the tool it is used this DB is populated
 database_sites <- data.frame(
   "survey" = NA, # survey
   "site_id" = NA, # a unique site code
