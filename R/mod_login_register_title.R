@@ -1,4 +1,4 @@
-#' auth UI Function
+#' login_register_title UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,17 +7,17 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_auth_ui <- function(id) {
+mod_login_register_title_ui <- function(id) {
   ns <- NS(id)
   tagList(
     uiOutput(ns("auth_ui")), # name on tab
   )
 }
 
-#' auth Server Functions
+#' login_register_title Server Functions
 #'
 #' @noRd
-mod_auth_server <- function(id, rv, x) {
+mod_login_register_title_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
@@ -36,7 +36,7 @@ mod_auth_server <- function(id, rv, x) {
 }
 
 ## To be copied in the UI
-# mod_auth_ui("auth_1")
+# mod_login_register_title_ui("login_register_title_1")
 
 ## To be copied in the server
-# mod_auth_server("auth_1")
+# mod_login_register_title_server("login_register_title_1")

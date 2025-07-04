@@ -1,4 +1,4 @@
-#' terms_privacy UI Function
+#' tab_terms_privacy UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_terms_privacy_ui <- function(id) {
+mod_tab_terms_privacy_ui <- function(id) {
   ns <- NS(id)
   tagList(
     h3("Terms of use & privacy policy"),
@@ -15,17 +15,17 @@ mod_terms_privacy_ui <- function(id) {
   )
 }
 
-#' terms_privacy Server Functions
+#' tab_terms_privacy Server Functions
 #'
 #' @noRd
-mod_terms_privacy_server <- function(id, rv, x) {
+mod_tab_terms_privacy_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
   })
 }
 
 ## To be copied in the UI
-# mod_terms_privacy_ui("terms_privacy_1")
+# mod_tab_terms_privacy_ui("tab_terms_privacy_1")
 
 ## To be copied in the server
-# mod_terms_privacy_server("terms_privacy_1")
+# mod_tab_terms_privacy_server("tab_terms_privacy_1")

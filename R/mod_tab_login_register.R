@@ -1,4 +1,4 @@
-#' login_button UI Function
+#' tab_login_register UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_login_button_ui <- function(id) {
+mod_tab_login_register_ui <- function(id) {
   ns <- NS(id)
   tagList(
     fluidRow(
@@ -38,10 +38,10 @@ mod_login_button_ui <- function(id) {
   )
 }
 
-#' login_button Server Functions
+#' tab_login_register Server Functions
 #'
 #' @noRd
-mod_login_button_server <- function(id, rv, x) {
+mod_tab_login_register_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
@@ -340,7 +340,7 @@ mod_login_button_server <- function(id, rv, x) {
 }
 
 ## To be copied in the UI
-# mod_login_button_ui("login_button_1")
+# mod_tab_login_register_ui("tab_login_register_1")
 
 ## To be copied in the server
-# mod_login_button_server("login_button_1")
+# mod_tab_login_register_server("tab_login_register_1")

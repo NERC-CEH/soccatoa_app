@@ -1,4 +1,4 @@
-#' modal_upload UI Function
+#' upload_to_DB UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_modal_upload_ui <- function(id) {
+mod_upload_to_DB_ui <- function(id) {
   ns <- NS(id)
   tagList(
     # use js script
@@ -296,10 +296,10 @@ mod_modal_upload_ui <- function(id) {
   )
 }
 
-#' modal_upload Server Functions
+#' upload_to_DB Server Functions
 #'
 #' @noRd
-mod_modal_upload_server <- function(id, rv, x) {
+mod_upload_to_DB_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
@@ -1133,7 +1133,7 @@ mod_modal_upload_server <- function(id, rv, x) {
 }
 
 ## To be copied in the UI
-# mod_modal_upload_ui("modal_upload_1")
+# mod_upload_to_DB_ui("upload_to_DB_1")
 
 ## To be copied in the server
-# mod_modal_upload_server("modal_upload_1")
+# mod_upload_to_DB_server("upload_to_DB_1")

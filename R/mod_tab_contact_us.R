@@ -1,4 +1,4 @@
-#' feedback UI Function
+#' tab_contact_us UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_feedback_ui <- function(id) {
+mod_tab_contact_us_ui <- function(id) {
   ns <- NS(id)
   tagList(
     p(lorem::ipsum(2), style = "text-align:justify;"),
@@ -18,19 +18,18 @@ mod_feedback_ui <- function(id) {
   )
 }
 
-#' feedback Server Functions
+#' tab_contact_us Server Functions
 #'
 #' @noRd
-mod_feedback_server <- function(id, rv, x) {
+mod_tab_contact_us_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
-    ### package blastula to send e-mails
   })
 }
 
 ## To be copied in the UI
-# mod_feedback_ui("feedback_1")
+# mod_tab_contact_us_ui("tab_contact_us_1")
 
 ## To be copied in the server
-# mod_feedback_server("feedback_1")
+# mod_tab_contact_us_server("tab_contact_us_1")
