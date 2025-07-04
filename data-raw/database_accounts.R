@@ -1,4 +1,4 @@
-## code to prepare `accounts` dataset goes here
+## code to prepare `database_accounts` dataset goes here
 example_user <- data.frame(
   "username" = digest::digest("test", algo = "md5"),
   "password" = digest::digest("test", algo = "md5"),
@@ -6,6 +6,6 @@ example_user <- data.frame(
   "date_registered" = Sys.Date()
 )
 
-accounts <- example_user
+database_accounts <- example_user
 
-usethis::use_data(accounts, overwrite = TRUE)
+usethis::use_data(database_accounts, overwrite = TRUE)

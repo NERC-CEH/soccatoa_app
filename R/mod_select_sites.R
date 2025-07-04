@@ -146,12 +146,12 @@ mod_select_sites_server <- function(id, rv, x) {
       label = "when db is updated, automatically select the new data",
       {
         if (!is.null(rv$selected_sites_upload)) {
-          load(here::here("data/all_data.rda"))
+          load(here::here("data/database_sites.rda"))
           updateSelectizeInput(
             session = session,
             inputId = "sites_picker",
             selected = sort(rv$selected_sites_upload),
-            choices = sort(all_data$site_id)
+            choices = sort(database_sites$site_id)
           )
         }
       }
@@ -163,19 +163,19 @@ mod_select_sites_server <- function(id, rv, x) {
 
     output$select_from_db <- renderUI({
       if (is.null(rv$all_data)) {
-        load(here::here("data/all_data.rda"))
+        load(here::here("data/database_sites.rda"))
 
         # clean in case it's en empty db (first submission)
-        all_data <- janitor::remove_empty(all_data, which = "rows")
+        database_sites <- janitor::remove_empty(database_sites, which = "rows")
       }
 
-      if (nrow(all_data) > 0) {
+      if (nrow(database_sites) > 0) {
         return(
           list(
             selectizeInput(
               ns("sites_picker"),
               label = "Sites available in the database:",
-              choices = sort(unique(all_data$site_id)),
+              choices = sort(unique(database_sites$site_id)),
               multiple = TRUE,
               width = "100%"
             )
@@ -215,10 +215,10 @@ mod_select_sites_server <- function(id, rv, x) {
           })
 
           # load the data
-          load(here::here("data/all_data.rda"))
+          load(here::here("data/database_sites.rda"))
 
           rv$my_data <-
-            all_data %>%
+            database_sites %>%
             dplyr::filter(site_id %in% input$sites_picker) %>%
             sf::st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
