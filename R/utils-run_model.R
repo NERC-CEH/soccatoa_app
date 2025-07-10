@@ -12,8 +12,7 @@
 #' @importFrom mgcv gam rmvn predict.gam
 #' @importFrom abind abind
 #' @export
-dummy_model <- function(df_loaded, predgrid, n_post_samples, n_chains){
-
+dummy_model <- function(df_loaded, predgrid, n_post_samples, n_chains) {
   # non-hierarchical GAM
   #jg <- mgcv::gam(list(log_rho_c ~ s(easting, northing, bs="gp") +
   #                            t2(easting, northing, fyear,
@@ -22,32 +21,41 @@ dummy_model <- function(df_loaded, predgrid, n_post_samples, n_chains){
   #                     ~ S_fez), #scale
   #                family=gaulss(),
   #                data=df_loaded)
-  jg <- mgcv::gam(log_rho_c ~ s(easting, northing, bs="gp") +
-                         t2(easting, northing, fyear,
-                            bs=c("gp", "re"), d=c(2,1), full=TRUE) +
-                         fyear + z,
-                  data=df_loaded)
+  jg <- mgcv::gam(
+    log_rho_c ~
+      s(easting, northing, bs = "gp") +
+        t2(
+          easting,
+          northing,
+          fyear,
+          bs = c("gp", "re"),
+          d = c(2, 1),
+          full = TRUE
+        ) +
+        fyear +
+        z,
+    data = df_loaded
+  )
 
   # since we're not doing multi-chain MCMC here just generate
   # samples x chains independent samples
-  samps <- rmvn(n_post_samples*n_chains, coef(jg), vcov(jg))
+  samps <- rmvn(n_post_samples * n_chains, coef(jg), vcov(jg))
 
-
-  lp <- predict(jg, newdata=predgrid, type="lpmatrix")
+  lp <- predict(jg, newdata = predgrid, type = "lpmatrix")
 
   # for now ignore the scale parameter stuff, drop last col
-  lpp <- lp[,-ncol(lp)] %*% t(samps[, -ncol(samps)])
+  lpp <- lp[, -ncol(lp)] %*% t(samps[, -ncol(samps)])
 
   # put into array format
   llpp <- list()
   st <- 0
-  for(i in 1:n_chains){
-    llpp[[i]] <- lpp[, (st+1):(n_post_samples*i)]
-    st <- n_post_samples*i
+  for (i in 1:n_chains) {
+    llpp[[i]] <- lpp[, (st + 1):(n_post_samples * i)]
+    st <- n_post_samples * i
   }
-  arr <- do.call(abind, list(llpp, along=3))
+  arr <- do.call(abind, list(llpp, along = 3))
   # get the dimensions in the right order
-  arr <- aperm(arr, c(2,3,1))
+  arr <- aperm(arr, c(2, 3, 1))
   # store the temporal information in the right dimension
   attr(arr, "dimnames")[[3]] <- as.character(predgrid$fyear)
   arr
@@ -67,9 +75,9 @@ dummy_model <- function(df_loaded, predgrid, n_post_samples, n_chains){
 #'
 #' @param df_loaded the data as loaded
 #' @return a data.frame that is ready for modelling
-data_model_A <- function(df_loaded){
+data_model_A <- function(df_loaded) {
   df <- df_loaded %>%
-    sf::st_as_sf(coords=c("lon","lat"), crs=4236) %>%
+    sf::st_as_sf(coords = c("lon", "lat"), crs = 4236) %>%
     sf::st_transform(27700)
   df %>%
     dplyr::bind_cols(sf::st_coordinates(df)) %>% # Extract long/lat
@@ -77,8 +85,7 @@ data_model_A <- function(df_loaded){
     sf::st_drop_geometry() %>% # Drop the geometry column
     # get carbon density
     dplyr::mutate(rho_c = f_c * rho_fe) %>%
-    dplyr::mutate(log_rho_c = log(rho_c),
-                  fyear = as.factor(year))
+    dplyr::mutate(log_rho_c = log(rho_c), fyear = as.factor(year))
 }
 
 #' Spatio-temporal model of soil carbon
@@ -90,25 +97,24 @@ data_model_A <- function(df_loaded){
 #' @export
 #'
 run_model_A <- function(df_loaded) {
-
   # get the data into shape
   df_fix <- data_model_A(df_loaded)
 
   # make prediction grid, this is probably going to stay when we move to
   # the "real" model
-  predgrid <- expand.grid(easting=seq(min(df_fix$easting),
-                                      max(df_fix$easting), length.out=20),
-                          northing=seq(min(df_fix$northing),
-                                       max(df_fix$northing), length.out=20),
-                          # since we assume log_e rho_c is linear in depth
-                          # we only need 2 points
-                          z=c(0.25, 0.55),
-                          # may want to specify this based on the time
-                          # period given by the user?
-                          fyear=unique(df_fix$fyear))#,
-                          # need to think about whether this is fixed or if
-                          # marginalize?
-                          #S_fez=mean(df_fix$S_fez))
+  predgrid <- expand.grid(
+    easting = seq(min(df_fix$easting), max(df_fix$easting), length.out = 20),
+    northing = seq(min(df_fix$northing), max(df_fix$northing), length.out = 20),
+    # since we assume log_e rho_c is linear in depth
+    # we only need 2 points
+    z = c(0.25, 0.55),
+    # may want to specify this based on the time
+    # period given by the user?
+    fyear = unique(df_fix$fyear)
+  ) #,
+  # need to think about whether this is fixed or if
+  # marginalize?
+  #S_fez=mean(df_fix$S_fez))
 
   ## probably want to define this in the UI later (as an advanced option?)
   # number of posterior samples to generate
@@ -127,7 +133,7 @@ run_model_A <- function(df_loaded) {
   model_result <- cbind(predgrid, rho_c = exp(model_result))
 
   # back-of-the envelope S_cz
-  model_result$S_cz <- cumsum(model_result$rho_c*model_result$z)
+  model_result$S_cz <- cumsum(model_result$rho_c * model_result$z)
 
   return(model_result)
 }
@@ -186,17 +192,17 @@ rgammat <- function(n, range, shape, rate = 1) {
 #' )
 #' }
 get_co2climate_effect <- function(
-    n_sim = 10,
-    S_c_start = 10,
-    start_year = 2025,
-    end_year = 2050,
-    this_scenario = c("RCP2.6", "RCP4.5", "RCP6.0", "RCP8.5"),
-    shape = 3.920758,
-    rate = 1371.239,
-    intercept = 0.004518087,
-    slope = -3.611591834,
-    sigma = 0.007210343,
-    maxbeta
+  n_sim = 10,
+  S_c_start = 10,
+  start_year = 2025,
+  end_year = 2050,
+  this_scenario = c("RCP2.6", "RCP4.5", "RCP6.0", "RCP8.5"),
+  shape = 3.920758,
+  rate = 1371.239,
+  intercept = 0.004518087,
+  slope = -3.611591834,
+  sigma = 0.007210343,
+  maxbeta
 ) {
   this_scenario <- match.arg(this_scenario)
   co2_start <- df_scenario$co2[
@@ -238,7 +244,6 @@ get_co2climate_effect <- function(
 #' @export
 #'
 run_model_B <- function(yrstart, yrend) {
-
   df_gamma <- read.csv("data-raw/files/df_gamma.csv")
 
   l_sigma <- get_co2climate_effect(
