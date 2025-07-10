@@ -1,13 +1,134 @@
-#' run_model_A
-#' @description function ...
-#' @param df_loaded a df of data loaded
+#' Dummy model fitted based on a standard GAM
+#'
+#' Nothing fancy here! Just a simple GAM, followed by some uncertainty
+#' estimation using posterior sampling. More information at
+#' https://github.com/NERC-CEH/soccatoa_app/issues/4
+#'
+#' @param n_post_samples how many posterior samples to use
+#' @param n_chains number of chains (just a multiplier on the number of samples
+#' here but when we do Real MCMC we will need use this)
+#' @param df_loaded a `data.frame` of data
+#' @return df_results
+#' @importFrom mgcv gam rmvn predict.gam
+#' @importFrom abind abind
+#' @export
+dummy_model <- function(df_loaded, predgrid, n_post_samples, n_chains){
+
+  # non-hierarchical GAM
+  #jg <- mgcv::gam(list(log_rho_c ~ s(easting, northing, bs="gp") +
+  #                            t2(easting, northing, fyear,
+  #                               bs=c("gp", "re"), d=c(2,1), full=TRUE) +
+  #                            fyear + z,
+  #                     ~ S_fez), #scale
+  #                family=gaulss(),
+  #                data=df_loaded)
+  jg <- mgcv::gam(log_rho_c ~ s(easting, northing, bs="gp") +
+                         t2(easting, northing, fyear,
+                            bs=c("gp", "re"), d=c(2,1), full=TRUE) +
+                         fyear + z,
+                  data=df_loaded)
+
+  # since we're not doing multi-chain MCMC here just generate
+  # samples x chains independent samples
+  samps <- rmvn(n_post_samples*n_chains, coef(jg), vcov(jg))
+
+
+  lp <- predict(jg, newdata=predgrid, type="lpmatrix")
+
+  # for now ignore the scale parameter stuff, drop last col
+  lpp <- lp[,-ncol(lp)] %*% t(samps[, -ncol(samps)])
+
+  # put into array format
+  llpp <- list()
+  st <- 0
+  for(i in 1:n_chains){
+    llpp[[i]] <- lpp[, (st+1):(n_post_samples*i)]
+    st <- n_post_samples*i
+  }
+  arr <- do.call(abind, list(llpp, along=3))
+  # get the dimensions in the right order
+  arr <- aperm(arr, c(2,3,1))
+  # store the temporal information in the right dimension
+  attr(arr, "dimnames")[[3]] <- as.character(predgrid$fyear)
+  arr
+}
+
+#' Process data for modelling
+#'
+#' Maybe want to put this elsewhere, but a little bit of data fiddling.
+#'
+#' What this function does:
+#'  - assumes lat/lon columns, EPSG4326
+#'  - project to UK grid EPSG27700
+#'  - creates new columns called easting and northing
+#'  - creates rho_c = f_c*rho_fe
+#'  - calculates log rho_c
+#'  - makes a factor year variable
+#'
+#' @param df_loaded the data as loaded
+#' @return a data.frame that is ready for modelling
+data_model_A <- function(df_loaded){
+  df <- df_loaded %>%
+    sf::st_as_sf(coords=c("lon","lat"), crs=4236) %>%
+    sf::st_transform(27700)
+  df %>%
+    dplyr::bind_cols(sf::st_coordinates(df)) %>% # Extract long/lat
+    dplyr::rename(easting = X, northing = Y) %>% # Rename columns
+    sf::st_drop_geometry() %>% # Drop the geometry column
+    # get carbon density
+    dplyr::mutate(rho_c = f_c * rho_fe) %>%
+    dplyr::mutate(log_rho_c = log(rho_c),
+                  fyear = as.factor(year))
+}
+
+#' Spatio-temporal model of soil carbon
+#'
+#' This fits our model of soil carbon. At the moment this is just a dummy
+#' function and will eventually call-out to other stuff.
+#' @param df_loaded a `data.frame` of data loaded
 #' @return df_results
 #' @export
 #'
 run_model_A <- function(df_loaded) {
-  # model here
-  # example output for now
-  model_result <- soccatoa::example_output
+
+  # get the data into shape
+  df_fix <- data_model_A(df_loaded)
+
+  # make prediction grid, this is probably going to stay when we move to
+  # the "real" model
+  predgrid <- expand.grid(easting=seq(min(df_fix$easting),
+                                      max(df_fix$easting), length.out=20),
+                          northing=seq(min(df_fix$northing),
+                                       max(df_fix$northing), length.out=20),
+                          # since we assume log_e rho_c is linear in depth
+                          # we only need 2 points
+                          z=c(0.25, 0.55),
+                          # may want to specify this based on the time
+                          # period given by the user?
+                          fyear=unique(df_fix$fyear))#,
+                          # need to think about whether this is fixed or if
+                          # marginalize?
+                          #S_fez=mean(df_fix$S_fez))
+
+  ## probably want to define this in the UI later (as an advanced option?)
+  # number of posterior samples to generate
+  n_post_samples <- 1000
+  # number of chains to run
+  n_chains <- 4
+  # for the dummy model we just generate n_post_samples*n_chains samples
+
+  # this returns 3D array of (iteration) x (chain) x (variable)
+  model_result <- dummy_model(df_fix, predgrid, n_post_samples, n_chains)
+
+  # for our purposes, let's simplify
+  model_result <- apply(model_result, 3, mean)
+
+  # want rho_c for output?
+  model_result <- cbind(predgrid, rho_c = exp(model_result))
+
+  # back-of-the envelope S_cz
+  model_result$S_cz <- cumsum(model_result$rho_c*model_result$z)
+
   return(model_result)
 }
 
