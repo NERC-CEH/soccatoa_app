@@ -1,4 +1,4 @@
-#' faq UI Function
+#' tab_faq UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_faq_ui <- function(id) {
+mod_tab_faq_ui <- function(id) {
   ns <- NS(id)
   tagList(
     h3("Q1: how does the ....?", style = "text-align: justify;"),
@@ -25,17 +25,17 @@ mod_faq_ui <- function(id) {
   )
 }
 
-#' faq Server Functions
+#' tab_faq Server Functions
 #'
 #' @noRd
-mod_faq_server <- function(id, rv, x) {
+mod_tab_faq_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
   })
 }
 
 ## To be copied in the UI
-# mod_faq_ui("faq_1")
+# mod_tab_faq_ui("tab_faq_1")
 
 ## To be copied in the server
-# mod_faq_server("faq_1")
+# mod_tab_faq_server("tab_faq_1")

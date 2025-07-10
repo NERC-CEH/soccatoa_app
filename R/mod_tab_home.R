@@ -1,4 +1,4 @@
-#' welcome UI Function
+#' tab home UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_welcome_ui <- function(id) {
+mod_tab_home_ui <- function(id) {
   ns <- NS(id)
   tagList(
     h3("SOCCATOA"),
@@ -30,10 +30,10 @@ mod_welcome_ui <- function(id) {
   )
 }
 
-#' welcome Server Functions
+#' tab home Server Functions
 #'
 #' @noRd
-mod_welcome_server <- function(id, rv, x) {
+mod_tab_home_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
     # close
@@ -41,7 +41,7 @@ mod_welcome_server <- function(id, rv, x) {
 }
 
 ## To be copied in the UI
-# mod_welcome_ui("welcome_1")
+# mod_tab_home_ui("tab_home_1")
 
 ## To be copied in the server
-# mod_welcome_server("welcome_1")
+# mod_tab_home_server("tab_home_1")

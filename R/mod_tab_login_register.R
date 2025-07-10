@@ -1,4 +1,4 @@
-#' login_button UI Function
+#' tab_login_register UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_login_button_ui <- function(id) {
+mod_tab_login_register_ui <- function(id) {
   ns <- NS(id)
   tagList(
     fluidRow(
@@ -38,10 +38,10 @@ mod_login_button_ui <- function(id) {
   )
 }
 
-#' login_button Server Functions
+#' tab_login_register Server Functions
 #'
 #' @noRd
-mod_login_button_server <- function(id, rv, x) {
+mod_tab_login_register_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
@@ -155,9 +155,9 @@ mod_login_button_server <- function(id, rv, x) {
 
     observeEvent(input$login, label = "login", {
       # check username exists
-      load(paste0(here::here(), "/data/accounts.rda"))
+      load(paste0(here::here(), "/data/database_accounts.rda"))
 
-      all_users <- accounts$username
+      all_users <- database_accounts$username
 
       if (is.null(input$username)) {
         user_given <- c("")
@@ -174,7 +174,7 @@ mod_login_button_server <- function(id, rv, x) {
         }
 
         should_be_psw <- dplyr::filter(
-          accounts,
+          database_accounts,
           username == user_given
         )[1, "password"]
 
@@ -279,11 +279,11 @@ mod_login_button_server <- function(id, rv, x) {
             input$password_register != ""
         ) {
           # check username isn't already existing
-          load(paste0(here::here(), "/data/accounts.rda"))
+          load(paste0(here::here(), "/data/database_accounts.rda"))
 
           if (
             c(digest::digest(input$username_register, algo = "md5")) %in%
-              accounts$username
+            database_accounts$username
           ) {
             output$validating_newuser <- renderUI({
               p("Username already in use", style = "color: #F18968;")
@@ -302,11 +302,9 @@ mod_login_button_server <- function(id, rv, x) {
               "date_registered" = Sys.Date()
             )
 
-            accounts <- rbind(accounts, new_user)
+            database_accounts <- rbind(database_accounts, new_user)
 
-            # print(accounts)
-
-            save(accounts, file = paste0(here::here(), "/data/accounts.rda"))
+            save(database_accounts, file = paste0(here::here(), "/data/database_accounts.rda"))
 
             output$validating_newuser <- renderUI({
               p("Account created successfully", style = "color: #58BAC1;")
@@ -340,7 +338,7 @@ mod_login_button_server <- function(id, rv, x) {
 }
 
 ## To be copied in the UI
-# mod_login_button_ui("login_button_1")
+# mod_tab_login_register_ui("tab_login_register_1")
 
 ## To be copied in the server
-# mod_login_button_server("login_button_1")
+# mod_tab_login_register_server("tab_login_register_1")

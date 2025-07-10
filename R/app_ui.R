@@ -22,15 +22,18 @@ app_ui <- function(request) {
     "headings-font-weight" = 600
   )
 
-  ### header
+
   bslib::page_navbar(
     id = "main_navbar",
     theme = UKCEH_theme,
-    bg = "#EAEFEC",
-    inverse = TRUE,
+
+    navbar_options = bslib::navbar_options(
+      bg = "#EAEFEC",
+      inverse = TRUE
+    ),
 
     # External resources and spinner
-    tags$head(
+    header = tags$head(
       golem_add_external_resources(),
       waiter::use_waiter(),
       waiter::waiter_on_busy(
@@ -49,11 +52,11 @@ app_ui <- function(request) {
           id = "soccatoapage",
           tabPanel(
             "Home",
-            mod_welcome_ui("welcome_1")
+            mod_tab_home_ui("tab_home_1")
           ),
           tabPanel(
             "Run Model",
-            mod_run_model_ui("run_model_1")
+            mod_tab_model_ui("tab_model_1")
           )
         )
       ),
@@ -65,26 +68,26 @@ app_ui <- function(request) {
     # FAQ
     bslib::nav_panel(
       title = "FAQs",
-      mod_faq_ui("faq_1"),
+      mod_tab_faq_ui("tab_faq_1"),
       div(class = "footer", mod_footer_ui("footer_2"))
     ),
     # CONTACT US
     bslib::nav_panel(
       title = "Contact us",
-      mod_feedback_ui("feedback_1"),
+      mod_tab_contact_us_ui("tab_contact_us_1"),
       div(class = "footer", mod_footer_ui("footer_4"))
     ),
     # TERMS OF USE
     bslib::nav_panel(
       title = "Terms & Privacy",
-      mod_terms_privacy_ui("terms_privacy_1"),
+      mod_tab_terms_privacy_ui("tab_terms_privacy_1"),
       div(class = "footer", mod_footer_ui("footer_3"))
     ),
     # login or logout
     bslib::nav_spacer(),
     bslib::nav_panel(
-      title = mod_auth_ui("auth_1"),
-      mod_login_button_ui("login_button_1"),
+      title = mod_login_register_title_ui("login_register_title_1"),
+      mod_tab_login_register_ui("tab_login_register_1"),
       div(class = "footer", mod_footer_ui("footer_5"))
     ),
   )

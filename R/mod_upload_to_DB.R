@@ -1,4 +1,4 @@
-#' modal_upload UI Function
+#' upload_to_DB UI Function
 #'
 #' @description A shiny Module.
 #'
@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_modal_upload_ui <- function(id) {
+mod_upload_to_DB_ui <- function(id) {
   ns <- NS(id)
   tagList(
     # use js script
@@ -296,10 +296,10 @@ mod_modal_upload_ui <- function(id) {
   )
 }
 
-#' modal_upload Server Functions
+#' upload_to_DB Server Functions
 #'
 #' @noRd
-mod_modal_upload_server <- function(id, rv, x) {
+mod_upload_to_DB_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
@@ -1064,10 +1064,10 @@ mod_modal_upload_server <- function(id, rv, x) {
         data_to_save$user <- rv$user
 
         #save the loaded data into the system
-        load(here::here("data/all_data.rda"))
+        load(here::here("data/database_sites.rda"))
 
         # Check for duplicates (ignoring 'user' column)
-        temp_all <- dplyr::select(all_data, -user)
+        temp_all <- dplyr::select(database_sites, -user)
         temp_new <- dplyr::select(data_to_save, -user)
 
         duplicated_rows <- dplyr::semi_join(
@@ -1105,11 +1105,11 @@ mod_modal_upload_server <- function(id, rv, x) {
         )
 
         #save
-        all_data <- rbind(all_data, data_to_save_unique)
-        all_data <- janitor::remove_empty(all_data, which = "rows")
-        rv$all_data <- all_data
+        database_sites <- rbind(database_sites, data_to_save_unique)
+        database_sites <- janitor::remove_empty(database_sites, which = "rows")
+        rv$all_data <- database_sites
 
-        save(all_data, file = here::here("data/all_data.rda"))
+        save(database_sites, file = here::here("data/database_sites.rda"))
 
         # automatically select the site of the uploaded file to run
         rv$selected_sites_upload <- data_to_save_unique$site_id[1]
@@ -1133,7 +1133,7 @@ mod_modal_upload_server <- function(id, rv, x) {
 }
 
 ## To be copied in the UI
-# mod_modal_upload_ui("modal_upload_1")
+# mod_upload_to_DB_ui("upload_to_DB_1")
 
 ## To be copied in the server
-# mod_modal_upload_server("modal_upload_1")
+# mod_upload_to_DB_server("upload_to_DB_1")

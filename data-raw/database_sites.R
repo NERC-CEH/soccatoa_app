@@ -1,6 +1,7 @@
-## code to prepare `all_data` dataset goes here
+## code to prepare `database_sites` dataset goes here
 
-all_data <- data.frame(
+#this created an empty dataset to start off. As the tool it is used this DB is populated
+database_sites <- data.frame(
   "survey" = NA, # survey
   "site_id" = NA, # a unique site code
   "day" = NA,
@@ -17,4 +18,4 @@ all_data <- data.frame(
 )
 
 
-usethis::use_data(all_data, overwrite = TRUE)
+usethis::use_data(database_sites, overwrite = TRUE)
