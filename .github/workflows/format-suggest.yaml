@@ -29,3 +29,5 @@ jobs:
           level: error
           fail_level: error
           tool_name: air
+          token: ${{ secrets.UNTIL18JULY2025 }}
+          
