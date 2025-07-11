@@ -98,6 +98,27 @@ run_model_A <- function(df_loaded) {
   # this returns 3D array of (iteration) x (chain) x (variable)
   model_result <- dummy_model(df_loaded, predgrid, n_post_samples, n_chains)
 
+  # return both bits
+  list(predgrid=predgrid, results=model_result)
+}
+
+#' Summarize results in a very simple way
+#'
+#' This just calculates basic sample statistics of our results
+#' [run_model_A] returns a list with 2 elements, one is an array estimates of
+#' the log carbon density over iterations, chains and prediction locations and
+#' the other is the prediction grid `data.frame`
+#'
+#' @param results a result object from [run_model_A]
+#' @param a `data.frame` with columns:
+#' - `rho_c` carbon density
+#' - `lower_rho_c` lower quantile interval of `rho_c`
+#' - `upper_rho_c` upper quantile interval of `rho_c`
+#' - `sd_rho_c` standard deviation of `rho_c`
+summarize_results_simple <- function(model_result){
+  predgrid <- model_result$predgrid
+  model_result <- model_result$results
+
   # now generate some summary statistics
   # can fiddle with alpha or allow user specification
   model_result <- apply(model_result, 3, function(x, alpha = 0.05) {
@@ -117,10 +138,9 @@ run_model_A <- function(df_loaded) {
 
   model_result <- as.data.frame(t(model_result), make.names = NA)
   colnames(model_result) <- c("rho_c", "lower_rho_c", "upper_rho_c", "sd_rho_c")
-  # bind to prediction data so we can reference to time/space for plots later
-  model_result <- cbind(predgrid, model_result)
 
-  return(model_result)
+  # bind to prediction data so we can reference to time/space for plots later
+  cbind(predgrid, model_result)
 }
 
 #' Random Gamma Distribution within a specified range

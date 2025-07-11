@@ -246,10 +246,8 @@ mod_results_server <- function(id, rv, x) {
 
     output$map_result <- leaflet::renderLeaflet({
       if (isTruthy(rv$data_results)) {
-        data <- dplyr::filter(
-          rv$data_results,
-          z == 0.55
-        ) %>%
+        data <- summarize_results_simple(rv$data_results) %>%
+          dplyr::filter(z == 0.55) %>%
           sf::st_as_sf(coords = c("easting", "northing"), crs = 27700) %>%
           sf::st_transform(crs = 4326) %>%
           # calculate S_cz at the depth we've selected
