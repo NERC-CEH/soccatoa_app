@@ -8,6 +8,7 @@ License: What license is it under?
 Depends: 
     R (>= 3.5)
 Imports: 
+    abind,
     bslib,
     config (>= 0.3.2),
     dplyr,
@@ -19,8 +20,10 @@ Imports:
     leaflet,
     lorem,
     magrittr,
+    mgcv,
     plotly,
     polished,
+    posterior,
     readr,
     sf,
     shiny (>= 1.8.1.1),

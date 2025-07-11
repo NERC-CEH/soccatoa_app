@@ -4,16 +4,19 @@
 \alias{summarize_results_simple}
 \title{Summarize results in a very simple way}
 \usage{
-summarize_results_simple(model_result)
+summarize_results_simple(model_result, alpha = 0.05)
 }
 \arguments{
-\item{results}{a result object from [run_model_A]}
+\item{alpha}{the alpha level used to generate the quantile intervals}
 
-\item{a}{`data.frame` with columns:
+\item{results}{a result object from [run_model_A]}
+}
+\value{
+a `data.frame` with columns:
 - `rho_c` carbon density
 - `lower_rho_c` lower quantile interval of `rho_c`
 - `upper_rho_c` upper quantile interval of `rho_c`
-- `sd_rho_c` standard deviation of `rho_c`}
+- `sd_rho_c` standard deviation of `rho_c`
 }
 \description{
 This just calculates basic sample statistics of our results
