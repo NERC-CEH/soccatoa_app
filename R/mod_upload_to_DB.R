@@ -405,13 +405,13 @@ mod_upload_to_DB_server <- function(id, rv, x) {
       df <- data.frame(
         "Name" = c("survey", "site_id", "z", "d", "rho_fe", "f_c", "S_cz"),
         "Description" = c(
-          "to fill 1",
-          "unique site code",
-          "to fill 3",
-          "to fill 4",
-          "to fill 5",
-          "to fill 6",
-          "to fill 7"
+          "Survey identifier",
+          "Unique site code",
+          "Depth",
+          "Sample thickness",
+          "Fine earth density",
+          "Carbon fraction",
+          "Cumulative areal density"
         ),
         stringsAsFactors = FALSE,
         check.names = FALSE
