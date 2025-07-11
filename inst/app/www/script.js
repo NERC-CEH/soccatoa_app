@@ -6,6 +6,6 @@ Shiny.addCustomMessageHandler('getDropdownValues', function(dropdown_ids) {
     result[id] = el ? el.value : null;
   });
   console.log("Sending dropdown_values:", result);
-  Shiny.setInputValue('modal_upload_1-dropdown_values', result, {priority: 'event'});
+  Shiny.setInputValue('upload_to_DB_1-dropdown_values', result, {priority: 'event'});
 });
 });

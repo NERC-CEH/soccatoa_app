@@ -81,13 +81,8 @@ mod_select_sites_ui <- function(id) {
                 width = "100%",
                 style = "font-size:100%"
               ),
-              actionButton(
-                ns("model_output"),
-                label = div(icon("computer", lib = "font-awesome"), "run"),
-                width = "100%",
-                style = "margin-right: auto; font-size:100%;",
-                class = "btn-run"
-              )
+              #run button
+              mod_run_model_ui("run_model_1")
             )
           )
         )
@@ -134,7 +129,7 @@ mod_select_sites_server <- function(id, rv, x) {
       ns <- session$ns
       modalDialog(
         tagList(
-          mod_modal_upload_ui("modal_upload_1")
+          mod_upload_to_DB_ui("upload_to_DB_1")
         ),
         size = "xl",
         easyClose = T,
@@ -151,12 +146,12 @@ mod_select_sites_server <- function(id, rv, x) {
       label = "when db is updated, automatically select the new data",
       {
         if (!is.null(rv$selected_sites_upload)) {
-          load(here::here("data/all_data.rda"))
+          load(here::here("data/database_sites.rda"))
           updateSelectizeInput(
             session = session,
             inputId = "sites_picker",
             selected = sort(rv$selected_sites_upload),
-            choices = sort(all_data$site_id)
+            choices = sort(database_sites$site_id)
           )
         }
       }
@@ -168,19 +163,19 @@ mod_select_sites_server <- function(id, rv, x) {
 
     output$select_from_db <- renderUI({
       if (is.null(rv$all_data)) {
-        load(here::here("data/all_data.rda"))
+        load(here::here("data/database_sites.rda"))
 
         # clean in case it's en empty db (first submission)
-        all_data <- janitor::remove_empty(all_data, which = "rows")
+        database_sites <- janitor::remove_empty(database_sites, which = "rows")
       }
 
-      if (nrow(all_data) > 0) {
+      if (nrow(database_sites) > 0) {
         return(
           list(
             selectizeInput(
               ns("sites_picker"),
               label = "Sites available in the database:",
-              choices = sort(unique(all_data$site_id)),
+              choices = sort(unique(database_sites$site_id)),
               multiple = TRUE,
               width = "100%"
             )
@@ -220,10 +215,10 @@ mod_select_sites_server <- function(id, rv, x) {
           })
 
           # load the data
-          load(here::here("data/all_data.rda"))
+          load(here::here("data/database_sites.rda"))
 
           rv$my_data <-
-            all_data %>%
+            database_sites %>%
             dplyr::filter(site_id %in% input$sites_picker) %>%
             sf::st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
@@ -404,91 +399,6 @@ mod_select_sites_server <- function(id, rv, x) {
       } else {
         return(NULL)
       }
-    })
-
-    #######################################################
-    ############ Running the model ########################
-    #######################################################
-
-    run_modal <- function() {
-      ns <- session$ns
-      modalDialog(
-        tagList(
-          h2("select years to run"),
-          fluidRow(
-            column(4, offset = 2, uiOutput(ns("year_start"))),
-            column(
-              4,
-              uiOutput(ns("year_end"))
-            )
-          ),
-          fluidRow(column(
-            8,
-            offset = 2,
-            actionButton(
-              inputId = ns("run_model"),
-              label = div(icon("computer", lib = "font-awesome"), "run"),
-              width = "100%",
-              style = "margin-right: auto; font-size:100%;",
-              class = "btn-run"
-            )
-          ))
-        ),
-        size = "l",
-        easyClose = T,
-        footer = NULL
-      )
-    }
-
-    output$year_start <- renderUI({
-      selectizeInput(
-        ns("year_start_filter"),
-        label = "year start",
-        width = "100%",
-        choices = c(unique(rv$my_data$year)),
-        selected = min(unique(rv$my_data$year))
-      )
-    })
-
-    output$year_end <- renderUI({
-      selectizeInput(
-        ns("year_end_filter"),
-        label = "year end",
-        width = "100%",
-        choices = c(unique(rv$my_data$year)),
-        selected = c(max(rv$my_data$year))
-      )
-    })
-
-    observeEvent(
-      input$model_output,
-      label = "show the modal to pick the years",
-      {
-        showModal(run_modal())
-      }
-    )
-
-    observeEvent(input$run_model, label = "run the model", {
-      years <- c(
-        as.numeric(input$year_start_filter),
-        as.numeric(input$year_end_filter)
-      )
-
-      # run models
-      releavant_data <-
-        rv$my_data %>%
-        dplyr::filter(year >= min(years) & year <= max(years))
-
-      rv$data_results <- soccatoa::run_model_A(df_loaded = releavant_data)
-
-      # rv$data_results_B <- soccatoa::run_model_B(df_loaded = releavant_data,
-      # yrstart = as.character(min(years)),
-      # yrend = as.character(max(years))
-      # )
-
-      # #show the result page
-      rv$page_showing <- "results"
-      removeModal()
     })
 
     #######################################################

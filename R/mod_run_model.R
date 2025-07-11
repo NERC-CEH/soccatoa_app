@@ -10,32 +10,14 @@
 mod_run_model_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    # IF LOGGED OUT
-    conditionalPanel(
-      condition = "output.panelCondition_logged_out",
-      ns = NS(id),
-      h3("SOCCATOA"),
-      div(
-        img(src = "www/example.jpg", class = "wrapped-image"),
-        div(
-          class = "text-content",
-          p(lorem::ipsum(5, 7))
-        )
-      )
-    ),
 
-    # IF LOGGED IN
-    conditionalPanel(
-      condition = "output.panelCondition_logged_in",
-      ns = NS(id),
-      mod_select_sites_ui("select_sites_1")
-    ),
-
-    # IF FILE LOADED
-    conditionalPanel(
-      condition = "output.panelCondition_rusults",
-      ns = NS(id),
-      mod_results_ui("results_1")
+    #run button
+    actionButton(
+      ns("model_output"),
+      label = div(icon("computer", lib = "font-awesome"), "run"),
+      width = "100%",
+      style = "margin-right: auto; font-size:100%;",
+      class = "btn-run"
     )
   )
 }
@@ -43,30 +25,92 @@ mod_run_model_ui <- function(id) {
 #' run_model Server Functions
 #'
 #' @noRd
-mod_run_model_server <- function(id, rv, x) {
-  moduleServer(id, session = x, function(input, output, session) {
+mod_run_model_server <- function(id, rv, x){
+  moduleServer(id, session = x, function(input, output, session){
     ns <- session$ns
 
-    output$panelCondition_logged_out <- reactive({
-      rv$page_showing == "logged_out"
+    run_modal <- function() {
+      ns <- session$ns
+      modalDialog(
+        tagList(
+          h2("select years to run"),
+          fluidRow(
+            column(4, offset = 2, uiOutput(ns("year_start"))),
+            column(
+              4,
+              uiOutput(ns("year_end"))
+            )
+          ),
+          fluidRow(column(
+            8,
+            offset = 2,
+            actionButton(
+              inputId = ns("run_model"),
+              label = div(icon("computer", lib = "font-awesome"), "run"),
+              width = "100%",
+              style = "margin-right: auto; font-size:100%;",
+              class = "btn-run"
+            )
+          ))
+        ),
+        size = "l",
+        easyClose = T,
+        footer = NULL
+      )
+    }
+
+    output$year_start <- renderUI({
+      selectizeInput(
+        ns("year_start_filter"),
+        label = "year start",
+        width = "100%",
+        choices = c(unique(rv$my_data$year)),
+        selected = min(unique(rv$my_data$year))
+      )
     })
-    outputOptions(
-      output,
-      "panelCondition_logged_out",
-      suspendWhenHidden = FALSE
+
+    output$year_end <- renderUI({
+      selectizeInput(
+        ns("year_end_filter"),
+        label = "year end",
+        width = "100%",
+        choices = c(unique(rv$my_data$year)),
+        selected = c(max(rv$my_data$year))
+      )
+    })
+
+    observeEvent(
+      input$model_output,
+      label = "show the modal to pick the years",
+      {
+        showModal(run_modal())
+      }
     )
 
-    output$panelCondition_logged_in <- reactive({
-      rv$page_showing == "logged_in"
-    })
-    outputOptions(output, "panelCondition_logged_in", suspendWhenHidden = FALSE)
+    observeEvent(input$run_model, label = "run the model", {
+      years <- c(
+        as.numeric(input$year_start_filter),
+        as.numeric(input$year_end_filter)
+      )
 
-    output$panelCondition_rusults <- reactive({
-      rv$page_showing == "results"
-    })
-    outputOptions(output, "panelCondition_rusults", suspendWhenHidden = FALSE)
+      # run models
+      releavant_data <-
+        rv$my_data %>%
+        dplyr::filter(year >= min(years) & year <= max(years))
 
-    # close
+      rv$data_results <- soccatoa::run_model_A(df_loaded = releavant_data)
+
+      # rv$data_results_B <- soccatoa::run_model_B(df_loaded = releavant_data,
+      # yrstart = as.character(min(years)),
+      # yrend = as.character(max(years))
+      # )
+
+      # #show the result page
+      rv$page_showing <- "results"
+      removeModal()
+    })
+
+
   })
 }
 
