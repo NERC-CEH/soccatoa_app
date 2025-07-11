@@ -161,10 +161,10 @@ clean_input <- function(x) {
 #'  - calculates log rho_c
 #'  - makes a factor year variable
 #'
-#' @param df_loaded the data as loaded
+#' @param df_loaded the data as initially uploaded
 #' @return a data.frame that is ready for modelling
 #' @export
-format_model_data <- function(df_loaded) {
+reformat_data <- function(df_loaded) {
   df <- df_loaded %>%
     sf::st_as_sf(coords = c("lon", "lat"), crs = 4236) %>%
     sf::st_transform(27700)

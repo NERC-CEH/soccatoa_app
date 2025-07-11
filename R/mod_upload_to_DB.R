@@ -1067,7 +1067,7 @@ mod_upload_to_DB_server <- function(id, rv, x) {
         load(here::here("data/database_sites.rda"))
 
         # format data for modelling
-        data_to_save <- format_model_data(data_to_save)
+        data_to_save <- reformat_data(data_to_save)
 
         # Check for duplicates (ignoring 'user' column)
         temp_all <- dplyr::select(database_sites, -user)
