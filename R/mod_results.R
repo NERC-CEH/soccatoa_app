@@ -105,15 +105,15 @@ mod_results_server <- function(id, rv, x) {
 
     output$result <- renderPlot({
       if (isTruthy(rv$data_results)) {
-
         # bind stats model and climate model results
-        data_2 <- cbind(summarize_results_change(rv$data_results),
-                        # this is just the example data
-                        data.frame(
-                          climate_effect = c(2, 3), # blue line (constant)
-                          climate_error = c(0.3, 0.4) # Error for blue
-                        )
-                        )
+        data_2 <- cbind(
+          summarize_results_change(rv$data_results),
+          # this is just the example data
+          data.frame(
+            climate_effect = c(2, 3), # blue line (constant)
+            climate_error = c(0.3, 0.4) # Error for blue
+          )
+        )
 
         # Convert data to long format for easier legend handling
         data_long <- tidyr::pivot_longer(
@@ -216,15 +216,20 @@ mod_results_server <- function(id, rv, x) {
 
     output$uncertainty_graph <- renderPlot({
       if (isTruthy(rv$data_results)) {
-
         # get distribution of differences
         uncertainty_df <- summarize_results_dist(rv$data_results)
 
         ggplot2::ggplot(uncertainty_df) +
-          ggplot2::geom_density(ggplot2::aes(value),
-                                color = "#37a635", size = 1.5) +
-          ggplot2::labs(title = "Distribution of difference\nin soil carbon",
-                        x = "Difference", y = "Probability density") +
+          ggplot2::geom_density(
+            ggplot2::aes(value),
+            color = "#37a635",
+            size = 1.5
+          ) +
+          ggplot2::labs(
+            title = "Distribution of difference\nin soil carbon",
+            x = "Difference",
+            y = "Probability density"
+          ) +
           ggplot2::theme_minimal() +
           ggplot2::theme(
             plot.title = ggplot2::element_text(

@@ -39,9 +39,9 @@ dummy_model <- function(df_loaded, predgrid, n_post_samples, n_chains) {
   arr <- do.call(abind, list(llpp, along = 3))
   # get the dimensions in the right order
   arr <- aperm(arr, c(2, 3, 1))
-#  dimnames(arr) <- list(dimnames(arr)[[1]],
-#                        dimnames(arr)[[2]],
-#                        paste0("pred[", dimnames(arr)[[3]], "]"))
+  #  dimnames(arr) <- list(dimnames(arr)[[1]],
+  #                        dimnames(arr)[[2]],
+  #                        paste0("pred[", dimnames(arr)[[3]], "]"))
   dimnames(arr)[[3]] <- paste0("pred[", dimnames(arr)[[3]], "]")
   # return as posterior object
   posterior::as_draws_array(arr)
@@ -71,13 +71,13 @@ make_prediction_grid <- function(df_loaded) {
     z = c(0.25, 0.55),
     # may want to specify this based on the time
     # period given by the user?
-    fyear = factor(range(df_loaded$year), levels=levels(df_loaded$fyear))
+    fyear = factor(range(df_loaded$year), levels = levels(df_loaded$fyear))
   ) #,
 
   # these need to be revisited depending on how we change the grid
   gr$d <- 0.3
-  gr$area <- ((max(df_loaded$easting)-min(df_loaded$easting))/neast)*
-              (max(df_loaded$northing)-min(df_loaded$northing)/nnorth)
+  gr$area <- ((max(df_loaded$easting) - min(df_loaded$easting)) / neast) *
+    (max(df_loaded$northing) - min(df_loaded$northing) / nnorth)
   # need to think about whether this is fixed or if
   # marginalize?
   #S_fez=mean(df_fix$S_fez))
@@ -130,15 +130,15 @@ summarize_results_simple <- function(model_result, alpha = 0.05) {
   model_result <- model_result$results
 
   model_result <- as_draws_df(model_result)
-  model_result <- model_result[, -((ncol(model_result)-2):ncol(model_result))]
+  model_result <- model_result[, -((ncol(model_result) - 2):ncol(model_result))]
 
   model_result <- apply(model_result, 2, function(x) {
     x <- exp(x)
     data.frame(
-      rho_c       = mean(x),
+      rho_c = mean(x),
       lower_rho_c = quantile(x, probs = c(alpha / 2)),
       upper_rho_c = quantile(x, probs = c(1 - alpha / 2)),
-      sd_rho_c    = sd(x)
+      sd_rho_c = sd(x)
     )
   })
 
@@ -167,26 +167,26 @@ summarize_results_change <- function(model_result) {
 
   # calculate S_cz for the two time periods
   # apply preserves the iterations
-  dd <- apply(dd[, -((ncol(dd)-2):ncol(dd))], 1,
-    function(x){
-      # get s_ci
-      x <- x*predgrid$d/predgrid$area
-      # sum over space per year
-      x <- aggregate(x, list(year=predgrid$fyear), sum)
+  dd <- apply(dd[, -((ncol(dd) - 2):ncol(dd))], 1, function(x) {
+    # get s_ci
+    x <- x * predgrid$d / predgrid$area
+    # sum over space per year
+    x <- aggregate(x, list(year = predgrid$fyear), sum)
   })
 
   # one row per iteration/year
   dd <- do.call(rbind, dd)
 
   # calculate summary statistics per year
-  dm <- aggregate(dd$x, list(year=dd$year), median)
-  derr <- aggregate(dd$x, list(year=dd$year), sd)
+  dm <- aggregate(dd$x, list(year = dd$year), median)
+  derr <- aggregate(dd$x, list(year = dd$year), sd)
 
   # return object for plotting
   data.frame(
     time = dm$year,
     total = dm$x, # orange line
-    total_error = derr$x)
+    total_error = derr$x
+  )
 }
 
 #' Summarize results for uncertainty plot
@@ -204,12 +204,11 @@ summarize_results_dist <- function(model_result) {
 
   # calculate S_cz for the two time periods
   # apply preserves the iterations
-  dd <- apply(dd[, -((ncol(dd)-2):ncol(dd))], 1,
-    function(x){
-      # get s_ci
-      x <- x*predgrid$d/predgrid$area
-      # sum over space per year
-      x <- aggregate(x, list(year=predgrid$fyear), sum)
+  dd <- apply(dd[, -((ncol(dd) - 2):ncol(dd))], 1, function(x) {
+    # get s_ci
+    x <- x * predgrid$d / predgrid$area
+    # sum over space per year
+    x <- aggregate(x, list(year = predgrid$fyear), sum)
   })
 
   # one row per iteration/year
@@ -222,7 +221,8 @@ summarize_results_dist <- function(model_result) {
   # return object for plotting
   data.frame(
     iter = 1:length(diff_dist),
-    value = diff_dist)
+    value = diff_dist
+  )
 }
 
 #' Random Gamma Distribution within a specified range
