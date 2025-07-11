@@ -405,13 +405,13 @@ mod_upload_to_DB_server <- function(id, rv, x) {
       df <- data.frame(
         "Name" = c("survey", "site_id", "z", "d", "rho_fe", "f_c", "S_cz"),
         "Description" = c(
-          "to fill 1",
-          "unique site code",
-          "to fill 3",
-          "to fill 4",
-          "to fill 5",
-          "to fill 6",
-          "to fill 7"
+          "Survey name",
+          "Site identifier",
+          "Depth of midpoint of soil core section",
+          "Length of soil core section",
+          "Bulk density of fine earth",
+          "Fraction of carbon in fine earth",
+          "Carbon stock in soil core, cumulative with depth"
         ),
         stringsAsFactors = FALSE,
         check.names = FALSE
@@ -444,10 +444,10 @@ mod_upload_to_DB_server <- function(id, rv, x) {
 
       # colnames -h
       colnames(df) <- c(
-        "Name variable in our database",
-        "What we mean by it",
-        "correspondent column in your data",
-        "unit of your data / projection"
+        "Standardised variable name",
+        "What it means",
+        "Corresponding column in your data",
+        "Units of your data"
       )
 
       # display the table with DT
@@ -1065,6 +1065,9 @@ mod_upload_to_DB_server <- function(id, rv, x) {
 
         #save the loaded data into the system
         load(here::here("data/database_sites.rda"))
+
+        # format data for modelling
+        data_to_save <- reformat_data(data_to_save)
 
         # Check for duplicates (ignoring 'user' column)
         temp_all <- dplyr::select(database_sites, -user)
