@@ -22,7 +22,6 @@ app_ui <- function(request) {
     "headings-font-weight" = 600
   )
 
-
   bslib::page_navbar(
     id = "main_navbar",
     theme = UKCEH_theme,

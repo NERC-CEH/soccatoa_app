@@ -10,7 +10,6 @@
 mod_run_model_ui <- function(id) {
   ns <- NS(id)
   tagList(
-
     #run button
     actionButton(
       ns("model_output"),
@@ -25,8 +24,8 @@ mod_run_model_ui <- function(id) {
 #' run_model Server Functions
 #'
 #' @noRd
-mod_run_model_server <- function(id, rv, x){
-  moduleServer(id, session = x, function(input, output, session){
+mod_run_model_server <- function(id, rv, x) {
+  moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
     run_modal <- function() {
@@ -109,8 +108,6 @@ mod_run_model_server <- function(id, rv, x){
       rv$page_showing <- "results"
       removeModal()
     })
-
-
   })
 }
 

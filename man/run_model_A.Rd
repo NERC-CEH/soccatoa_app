@@ -2,16 +2,17 @@
 % Please edit documentation in R/utils-run_model.R
 \name{run_model_A}
 \alias{run_model_A}
-\title{run_model_A}
+\title{Spatio-temporal model of soil carbon}
 \usage{
 run_model_A(df_loaded)
 }
 \arguments{
-\item{df_loaded}{a df of data loaded}
+\item{df_loaded}{a `data.frame` of data loaded}
 }
 \value{
 df_results
 }
 \description{
-function ...
+This fits our model of soil carbon. At the moment this is just a dummy
+function and will eventually call-out to other stuff.
 }
