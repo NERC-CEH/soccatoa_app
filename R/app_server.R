@@ -37,14 +37,18 @@ app_server <- function(input, output, session) {
   #"Run model"
   mod_tab_model_server("tab_model_1", rv = rv, x = session)
   #FAQ
-  mod_tab_faq_server("tab_faq_1",  rv = rv, x = session)
+  mod_tab_faq_server("tab_faq_1", rv = rv, x = session)
   #Contact us
   mod_tab_contact_us_server("tab_contact_us_1", rv = rv, x = session)
   #Terms & Privacy
   mod_tab_terms_privacy_server("tab_terms_privacy_1", rv = rv, x = session)
   #Login/register/my account
   mod_tab_login_register_server("tab_login_register_1", rv = rv, x = session)
-  mod_login_register_title_server("login_register_title_1", rv = rv, x = session)
+  mod_login_register_title_server(
+    "login_register_title_1",
+    rv = rv,
+    x = session
+  )
 
   # other modules (nested in the tabs)
   #in tab_model_1
@@ -52,5 +56,4 @@ app_server <- function(input, output, session) {
   mod_upload_to_DB_server("upload_to_DB_1", rv = rv, x = session)
   mod_run_model_server("run_model_1", rv = rv, x = session)
   mod_results_server("results_1", rv = rv, x = session)
-
 }

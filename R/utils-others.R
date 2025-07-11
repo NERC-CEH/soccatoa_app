@@ -166,7 +166,7 @@ clean_input <- function(x) {
 #' @export
 reformat_data <- function(df_loaded) {
   # include both northing/easting and lon/lat
-  if(!all(c("northing", "easting") %in% names(df_loaded))){
+  if (!all(c("northing", "easting") %in% names(df_loaded))) {
     df <- df_loaded %>%
       sf::st_as_sf(coords = c("lon", "lat"), crs = 4236) %>%
       sf::st_transform(27700)
@@ -175,13 +175,15 @@ reformat_data <- function(df_loaded) {
       dplyr::rename(easting = X, northing = Y) %>% # Rename columns
       sf::st_drop_geometry() # Drop the geometry column
   }
-  if(!all(c("lon", "lat") %in% names(df_loaded))){
+  if (!all(c("lon", "lat") %in% names(df_loaded))) {
     df <- df_loaded %>%
       sf::st_as_sf(coords = c("easting", "northing"), crs = 27700) %>%
       sf::st_transform(4326)
     df <- df %>%
-      dplyr::bind_cols(sf::st_coordinates(df),
-                       df_loaded[, c("easting", "northing")]) %>%
+      dplyr::bind_cols(
+        sf::st_coordinates(df),
+        df_loaded[, c("easting", "northing")]
+      ) %>%
       dplyr::rename(lon = X, lat = Y) %>% # Rename columns
       sf::st_drop_geometry() # Drop the geometry column
   }

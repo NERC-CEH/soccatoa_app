@@ -24,7 +24,6 @@ mod_tab_contact_us_ui <- function(id) {
 mod_tab_contact_us_server <- function(id, rv, x) {
   moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
-
   })
 }
 

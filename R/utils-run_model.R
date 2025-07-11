@@ -85,7 +85,6 @@ make_prediction_grid <- function(df_loaded) {
 #' @export
 #'
 run_model_A <- function(df_loaded) {
-
   # generate prediction grid
   predgrid <- make_prediction_grid(df_loaded)
 
