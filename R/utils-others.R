@@ -148,3 +148,31 @@ clean_input <- function(x) {
     x
   }
 }
+
+#' Process data for modelling
+#'
+#' Maybe want to put this elsewhere, but a little bit of data fiddling.
+#'
+#' What this function does:
+#'  - assumes lat/lon columns, EPSG4326
+#'  - project to UK grid EPSG27700
+#'  - creates new columns called easting and northing
+#'  - creates rho_c = f_c*rho_fe
+#'  - calculates log rho_c
+#'  - makes a factor year variable
+#'
+#' @param df_loaded the data as loaded
+#' @return a data.frame that is ready for modelling
+#' @export
+format_model_data <- function(df_loaded) {
+  df <- df_loaded %>%
+    sf::st_as_sf(coords = c("lon", "lat"), crs = 4236) %>%
+    sf::st_transform(27700)
+  df %>%
+    dplyr::bind_cols(sf::st_coordinates(df)) %>% # Extract long/lat
+    dplyr::rename(easting = X, northing = Y) %>% # Rename columns
+    sf::st_drop_geometry() %>% # Drop the geometry column
+    # get carbon density
+    dplyr::mutate(rho_c = f_c * rho_fe) %>%
+    dplyr::mutate(log_rho_c = log(rho_c), fyear = as.factor(year))
+}
