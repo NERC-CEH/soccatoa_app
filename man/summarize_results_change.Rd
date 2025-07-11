@@ -4,18 +4,15 @@
 \alias{summarize_results_change}
 \title{Summarize results for graph of changes}
 \usage{
-summarize_results_change(model_result)
+summarize_results_change(results)
 }
 \arguments{
 \item{results}{a result object from [run_model_A]}
 
-\item{a}{`data.frame` with columns:}
-
-\item{time}{two time periods to be used}
-
-\item{total}{soil carbon}
-
-\item{total_error}{uncertainty in soil carbon}
+\item{a}{`data.frame` with columns:
+- `time` two time periods to be used
+- `total` soil carbon
+- `total_error` uncertainty in soil carbon}
 }
 \description{
 Calculates statistics needed for the changes plot

@@ -4,7 +4,7 @@
 \alias{summarize_results_dist}
 \title{Summarize results for uncertainty plot}
 \usage{
-summarize_results_dist(model_result)
+summarize_results_dist(results)
 }
 \arguments{
 \item{results}{a result object from [run_model_A]}

@@ -7,7 +7,7 @@
 make_prediction_grid(df_loaded)
 }
 \arguments{
-\item{...}{nothing for now but we might want options in the future}
+\item{df_loaded}{the data.frame of the original data to use to get limits etc}
 }
 \value{
 a `data.frame` with locations in covariate space to predict at

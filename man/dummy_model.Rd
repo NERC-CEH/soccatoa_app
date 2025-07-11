@@ -9,6 +9,8 @@ dummy_model(df_loaded, predgrid, n_post_samples, n_chains)
 \arguments{
 \item{df_loaded}{a `data.frame` of data}
 
+\item{predgrid}{prediction grid to use}
+
 \item{n_post_samples}{how many posterior samples to use}
 
 \item{n_chains}{number of chains (just a multiplier on the number of samples

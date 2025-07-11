@@ -4,12 +4,12 @@
 \alias{summarize_results_simple}
 \title{Summarize results in a very simple way}
 \usage{
-summarize_results_simple(model_result, alpha = 0.05)
+summarize_results_simple(results, alpha = 0.05)
 }
 \arguments{
-\item{alpha}{the alpha level used to generate the quantile intervals}
-
 \item{results}{a result object from [run_model_A]}
+
+\item{alpha}{the alpha level used to generate the quantile intervals}
 }
 \value{
 a `data.frame` with columns:

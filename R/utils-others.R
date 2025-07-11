@@ -163,6 +163,7 @@ clean_input <- function(x) {
 #'
 #' @param df_loaded the data as initially uploaded
 #' @return a data.frame that is ready for modelling
+#' @importFrom dplyr "%>%"
 #' @export
 reformat_data <- function(df_loaded) {
   # include both northing/easting and lon/lat

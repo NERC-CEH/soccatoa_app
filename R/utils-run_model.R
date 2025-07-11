@@ -8,7 +8,9 @@
 #' @param n_chains number of chains (just a multiplier on the number of samples
 #' here but when we do Real MCMC we will need use this)
 #' @param df_loaded a `data.frame` of data
+#' @param predgrid prediction grid to use
 #' @return df_results
+#' @importFrom stats coef vcov predict
 #' @importFrom mgcv gam rmvn predict.gam
 #' @importFrom abind abind
 #' @importFrom posterior as_draws_array
@@ -39,9 +41,7 @@ dummy_model <- function(df_loaded, predgrid, n_post_samples, n_chains) {
   arr <- do.call(abind, list(llpp, along = 3))
   # get the dimensions in the right order
   arr <- aperm(arr, c(2, 3, 1))
-  #  dimnames(arr) <- list(dimnames(arr)[[1]],
-  #                        dimnames(arr)[[2]],
-  #                        paste0("pred[", dimnames(arr)[[3]], "]"))
+  # give the array some useful names
   dimnames(arr)[[3]] <- paste0("pred[", dimnames(arr)[[3]], "]")
   # return as posterior object
   posterior::as_draws_array(arr)
@@ -51,7 +51,7 @@ dummy_model <- function(df_loaded, predgrid, n_post_samples, n_chains) {
 #'
 #' Generate a grid to make predictions over
 #'
-#' @param ... nothing for now but we might want options in the future
+#' @param df_loaded the data.frame of the original data to use to get limits etc
 #' @return a `data.frame` with locations in covariate space to predict at
 make_prediction_grid <- function(df_loaded) {
   neast <- nnorth <- 20
@@ -72,7 +72,7 @@ make_prediction_grid <- function(df_loaded) {
     # may want to specify this based on the time
     # period given by the user?
     fyear = factor(range(df_loaded$year), levels = levels(df_loaded$fyear))
-  ) #,
+  )
 
   # these need to be revisited depending on how we change the grid
   gr$d <- 0.3
@@ -91,7 +91,6 @@ make_prediction_grid <- function(df_loaded) {
 #' @param df_loaded a `data.frame` of data loaded
 #' @return df_results
 #' @export
-#'
 run_model_A <- function(df_loaded) {
   # generate prediction grid
   predgrid <- make_prediction_grid(df_loaded)
@@ -124,15 +123,16 @@ run_model_A <- function(df_loaded) {
 #' - `lower_rho_c` lower quantile interval of `rho_c`
 #' - `upper_rho_c` upper quantile interval of `rho_c`
 #' - `sd_rho_c` standard deviation of `rho_c`
+#' @importFrom stats sd quantile
 #' @export
-summarize_results_simple <- function(model_result, alpha = 0.05) {
-  predgrid <- model_result$predgrid
-  model_result <- model_result$results
+summarize_results_simple <- function(results, alpha = 0.05) {
+  predgrid <- results$predgrid
+  results <- results$results
 
-  model_result <- as_draws_df(model_result)
-  model_result <- model_result[, -((ncol(model_result) - 2):ncol(model_result))]
+  results <- as_draws_df(results)
+  results <- results[, -((ncol(results) - 2):ncol(results))]
 
-  model_result <- apply(model_result, 2, function(x) {
+  results <- apply(results, 2, function(x) {
     x <- exp(x)
     data.frame(
       rho_c = mean(x),
@@ -142,10 +142,10 @@ summarize_results_simple <- function(model_result, alpha = 0.05) {
     )
   })
 
-  model_result <- do.call(rbind, model_result)
+  results <- do.call(rbind, results)
 
   # bind to prediction data so we can reference to time/space for plots later
-  cbind(predgrid, model_result)
+  cbind(predgrid, results)
 }
 
 #' Summarize results for graph of changes
@@ -154,14 +154,15 @@ summarize_results_simple <- function(model_result, alpha = 0.05) {
 #'
 #' @param results a result object from [run_model_A]
 #' @param a `data.frame` with columns:
-#' @param time two time periods to be used
-#' @param total soil carbon
-#' @param total_error uncertainty in soil carbon
+#' - `time` two time periods to be used
+#' - `total` soil carbon
+#' - `total_error` uncertainty in soil carbon
 #' @export
 #' @importFrom posterior as_draws_df
-summarize_results_change <- function(model_result) {
-  predgrid <- model_result$predgrid
-  md <- exp(model_result$results)
+#' @importFrom stats median aggregate
+summarize_results_change <- function(results) {
+  predgrid <- results$predgrid
+  md <- exp(results$results)
 
   dd <- as_draws_df(md)
 
@@ -196,9 +197,9 @@ summarize_results_change <- function(model_result) {
 #' @param results a result object from [run_model_A]
 #' @param a `data.frame` with columns:
 #' @export
-summarize_results_dist <- function(model_result) {
-  predgrid <- model_result$predgrid
-  md <- exp(model_result$results)
+summarize_results_dist <- function(results) {
+  predgrid <- results$predgrid
+  md <- exp(results$results)
 
   dd <- as_draws_df(md)
 
@@ -236,6 +237,7 @@ summarize_results_dist <- function(model_result) {
 #'
 #' @return A numeric vector of length `n` containing random numbers from a Gamma distribution within the specified range.
 #'
+#' @importFrom stats pgamma runif qgamma
 #' @examples
 #' set.seed(123)
 #' rgammat(10, range = c(0, 10), shape = 2, rate = 1)
@@ -328,6 +330,7 @@ get_co2climate_effect <- function(
 #' @param yrstart start year
 #' @param yrend end year
 #' @return df_results
+#' @importFrom utils read.csv
 #' @export
 #'
 run_model_B <- function(yrstart, yrend) {
