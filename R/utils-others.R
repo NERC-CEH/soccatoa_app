@@ -169,7 +169,9 @@ format_model_data <- function(df_loaded) {
     sf::st_as_sf(coords = c("lon", "lat"), crs = 4236) %>%
     sf::st_transform(27700)
   df %>%
-    dplyr::bind_cols(sf::st_coordinates(df)) %>% # Extract long/lat
+    # include both northing/easting and lon/lat
+    dplyr::bind_cols(sf::st_coordinates(df),
+                     df_loaded[,c("lon", "lat")]) %>%
     dplyr::rename(easting = X, northing = Y) %>% # Rename columns
     sf::st_drop_geometry() %>% # Drop the geometry column
     # get carbon density
