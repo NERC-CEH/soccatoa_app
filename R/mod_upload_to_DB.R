@@ -405,8 +405,8 @@ mod_upload_to_DB_server <- function(id, rv, x) {
       df <- data.frame(
         "Name" = c("survey", "site_id", "z", "d", "rho_fe", "f_c", "S_cz"),
         "Description" = c(
-          "Survey identifier",
-          "Unique site code",
+          "Survey name",
+          "Site identifier",
           "Depth",
           "Sample thickness",
           "Fine earth density",
