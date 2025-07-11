@@ -13,26 +13,10 @@
 #' @importFrom abind abind
 #' @export
 dummy_model <- function(df_loaded, predgrid, n_post_samples, n_chains) {
-  # non-hierarchical GAM
-  #jg <- mgcv::gam(list(log_rho_c ~ s(easting, northing, bs="gp") +
-  #                            t2(easting, northing, fyear,
-  #                               bs=c("gp", "re"), d=c(2,1), full=TRUE) +
-  #                            fyear + z,
-  #                     ~ S_fez), #scale
-  #                family=gaulss(),
-  #                data=df_loaded)
+  # a very very simple GAM :)
   jg <- mgcv::gam(
     log_rho_c ~
-      s(easting, northing, bs = "gp") +
-        t2(
-          easting,
-          northing,
-          fyear,
-          bs = c("gp", "re"),
-          d = c(2, 1),
-          full = TRUE
-        ) +
-        fyear +
+      fyear +
         z,
     data = df_loaded
   )
@@ -88,6 +72,37 @@ data_model_A <- function(df_loaded) {
     dplyr::mutate(log_rho_c = log(rho_c), fyear = as.factor(year))
 }
 
+#' Make a prediction grid
+#'
+#' Generate a grid to make predictions over
+#'
+#' @param ... nothing for now but we might want options in the future
+#' @return a `data.frame` with locations in covariate space to predict at
+make_prediction_grid <- function(df_loaded) {
+  expand.grid(
+    easting = seq(
+      min(df_loaded$easting),
+      max(df_loaded$easting),
+      length.out = 20
+    ),
+    northing = seq(
+      min(df_loaded$northing),
+      max(df_loaded$northing),
+      length.out = 20
+    ),
+    # since we assume log_e rho_c is linear in depth
+    # we only need 2 points
+    z = c(0.25, 0.55),
+    d = c(0.3, 0.3),
+    # may want to specify this based on the time
+    # period given by the user?
+    fyear = unique(df_loaded$fyear)
+  ) #,
+  # need to think about whether this is fixed or if
+  # marginalize?
+  #S_fez=mean(df_fix$S_fez))
+}
+
 #' Spatio-temporal model of soil carbon
 #'
 #' This fits our model of soil carbon. At the moment this is just a dummy
@@ -98,23 +113,10 @@ data_model_A <- function(df_loaded) {
 #'
 run_model_A <- function(df_loaded) {
   # get the data into shape
-  df_fix <- data_model_A(df_loaded)
+  df_loaded <- data_model_A(df_loaded)
 
-  # make prediction grid, this is probably going to stay when we move to
-  # the "real" model
-  predgrid <- expand.grid(
-    easting = seq(min(df_fix$easting), max(df_fix$easting), length.out = 20),
-    northing = seq(min(df_fix$northing), max(df_fix$northing), length.out = 20),
-    # since we assume log_e rho_c is linear in depth
-    # we only need 2 points
-    z = c(0.25, 0.55),
-    # may want to specify this based on the time
-    # period given by the user?
-    fyear = unique(df_fix$fyear)
-  ) #,
-  # need to think about whether this is fixed or if
-  # marginalize?
-  #S_fez=mean(df_fix$S_fez))
+  # generate prediction grid
+  predgrid <- make_prediction_grid(df_loaded)
 
   ## probably want to define this in the UI later (as an advanced option?)
   # number of posterior samples to generate
@@ -124,16 +126,29 @@ run_model_A <- function(df_loaded) {
   # for the dummy model we just generate n_post_samples*n_chains samples
 
   # this returns 3D array of (iteration) x (chain) x (variable)
-  model_result <- dummy_model(df_fix, predgrid, n_post_samples, n_chains)
+  model_result <- dummy_model(df_loaded, predgrid, n_post_samples, n_chains)
 
-  # for our purposes, let's simplify
-  model_result <- apply(model_result, 3, mean)
+  # now generate some summary statistics
+  # can fiddle with alpha or allow user specification
+  model_result <- apply(model_result, 3, function(x, alpha = 0.05) {
+    # rho_c scale from log(rho_c)
+    x <- exp(x)
+    xx <- matrix(
+      c(
+        mean(x),
+        quantile(x, probs = c(alpha / 2)),
+        quantile(x, probs = c(1 - alpha / 2)),
+        sd(x)
+      ),
+      nrow = 1
+    )
+    xx
+  })
 
-  # want rho_c for output?
-  model_result <- cbind(predgrid, rho_c = exp(model_result))
-
-  # back-of-the envelope S_cz
-  model_result$S_cz <- cumsum(model_result$rho_c * model_result$z)
+  model_result <- as.data.frame(t(model_result), make.names = NA)
+  colnames(model_result) <- c("rho_c", "lower_rho_c", "upper_rho_c", "sd_rho_c")
+  # bind to prediction data so we can reference to time/space for plots later
+  model_result <- cbind(predgrid, model_result)
 
   return(model_result)
 }
