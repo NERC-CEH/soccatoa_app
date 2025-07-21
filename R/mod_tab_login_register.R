@@ -283,7 +283,7 @@ mod_tab_login_register_server <- function(id, rv, x) {
 
           if (
             c(digest::digest(input$username_register, algo = "md5")) %in%
-            database_accounts$username
+              database_accounts$username
           ) {
             output$validating_newuser <- renderUI({
               p("Username already in use", style = "color: #F18968;")
@@ -304,7 +304,10 @@ mod_tab_login_register_server <- function(id, rv, x) {
 
             database_accounts <- rbind(database_accounts, new_user)
 
-            save(database_accounts, file = paste0(here::here(), "/data/database_accounts.rda"))
+            save(
+              database_accounts,
+              file = paste0(here::here(), "/data/database_accounts.rda")
+            )
 
             output$validating_newuser <- renderUI({
               p("Account created successfully", style = "color: #58BAC1;")

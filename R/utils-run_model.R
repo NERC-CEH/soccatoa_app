@@ -65,17 +65,17 @@ rgammat <- function(n, range, shape, rate = 1) {
 #' )
 #' }
 get_co2climate_effect <- function(
-    n_sim = 10,
-    S_c_start = 10,
-    start_year = 2025,
-    end_year = 2050,
-    this_scenario = c("RCP2.6", "RCP4.5", "RCP6.0", "RCP8.5"),
-    shape = 3.920758,
-    rate = 1371.239,
-    intercept = 0.004518087,
-    slope = -3.611591834,
-    sigma = 0.007210343,
-    maxbeta
+  n_sim = 10,
+  S_c_start = 10,
+  start_year = 2025,
+  end_year = 2050,
+  this_scenario = c("RCP2.6", "RCP4.5", "RCP6.0", "RCP8.5"),
+  shape = 3.920758,
+  rate = 1371.239,
+  intercept = 0.004518087,
+  slope = -3.611591834,
+  sigma = 0.007210343,
+  maxbeta
 ) {
   this_scenario <- match.arg(this_scenario)
   co2_start <- df_scenario$co2[
@@ -117,7 +117,6 @@ get_co2climate_effect <- function(
 #' @export
 #'
 run_model_B <- function(yrstart, yrend) {
-
   df_gamma <- read.csv("data-raw/files/df_gamma.csv")
 
   l_sigma <- get_co2climate_effect(
