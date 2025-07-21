@@ -10,8 +10,6 @@ run_model_B(yrstart, yrend)
 \item{yrstart}{start year}
 
 \item{yrend}{end year}
-
-\item{df_loaded}{a df of data loaded}
 }
 \value{
 df_results

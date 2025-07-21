@@ -104,14 +104,15 @@ mod_results_server <- function(id, rv, x) {
     ns <- session$ns
 
     output$result <- renderPlot({
-      if (isTruthy(rv$data_results)) {
-        ### example data
-        data_2 <- data.frame(
-          time = c(1, 2),
-          total = c(2, 6), # orange line
-          climate_effect = c(2, 3), # blue line (constant)
-          total_error = c(0.5, 0.7), # Error for orange
-          climate_error = c(0.3, 0.4) # Error for blue
+      if (isTruthy(rv$l_results)) {
+        # bind stats model and climate model results
+        data_2 <- cbind(
+          summarize_results_change(rv$l_results),
+          # this is just the example data
+          data.frame(
+            climate_effect = c(2, 3), # blue line (constant)
+            climate_error = c(0.3, 0.4) # Error for blue
+          )
         )
 
         # Convert data to long format for easier legend handling
@@ -214,15 +215,21 @@ mod_results_server <- function(id, rv, x) {
     })
 
     output$uncertainty_graph <- renderPlot({
-      if (isTruthy(rv$data_results)) {
-        x_val <- seq(-4, 4, length.out = 100)
-        uncertainty_df <- data.frame(
-          x = x_val,
-          y = dnorm(x_val, 0, 1)
-        )
-        ggplot2::ggplot(uncertainty_df, ggplot2::aes(x = x, y = y)) +
-          ggplot2::geom_line(color = "#37a635", size = 1.5) +
-          ggplot2::labs(title = "uncertainty graph", x = "value", y = "P") +
+      if (isTruthy(rv$l_results)) {
+        # get distribution of differences
+        uncertainty_df <- summarize_results_dist(rv$l_results)
+
+        ggplot2::ggplot(uncertainty_df) +
+          ggplot2::geom_density(
+            ggplot2::aes(value),
+            color = "#37a635",
+            size = 1.5
+          ) +
+          ggplot2::labs(
+            title = "Distribution of difference\nin soil carbon",
+            x = "Difference",
+            y = "Probability density"
+          ) +
           ggplot2::theme_minimal() +
           ggplot2::theme(
             plot.title = ggplot2::element_text(
@@ -245,15 +252,15 @@ mod_results_server <- function(id, rv, x) {
     })
 
     output$map_result <- leaflet::renderLeaflet({
-      if (isTruthy(rv$data_results)) {
-        ## output DF use example one for now
-        # to coordinates
-        data <- dplyr::filter(
-          rv$data_results,
-          z == 0.55
-        ) %>%
+      if (isTruthy(rv$l_results)) {
+        data <- summarize_results_simple(rv$l_results) %>%
+          dplyr::filter(z == 0.55) %>%
           sf::st_as_sf(coords = c("easting", "northing"), crs = 27700) %>%
-          sf::st_transform(crs = 4326)
+          sf::st_transform(crs = 4326) %>%
+          # calculate S_cz at the depth we've selected
+          dplyr::mutate(
+            S_cz = d * rho_c
+          )
 
         numPal <- leaflet::colorNumeric("viridis", data$S_cz)
         leaflet::leaflet() %>%

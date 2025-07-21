@@ -1,14 +1,242 @@
-#' run_model_A
-#' @description function ...
-#' @param df_loaded a df of data loaded
+#' Dummy model fitted based on a standard GAM
+#'
+#' Nothing fancy here! Just a simple GAM, followed by some uncertainty
+#' estimation using posterior sampling. More information at
+#' https://github.com/NERC-CEH/soccatoa_app/issues/4
+#'
+#' @param n_post_samples how many posterior samples to use
+#' @param n_chains number of chains (just a multiplier on the number of samples
+#' here but when we do Real MCMC we will need use this)
+#' @param df a `data.frame` of data
+#' @param df_grid prediction grid to use
+#' @return df_results
+#' @importFrom stats coef vcov predict
+#' @importFrom mgcv gam rmvn predict.gam
+#' @importFrom abind abind
+#' @importFrom posterior as_draws_array
+#' @export
+dummy_model <- function(df, df_grid, n_post_samples, n_chains) {
+  # check
+  v_year <- unique(df$fyear)
+  if (length(v_year) < 2) {
+    stop("You need at least 2 time points to estimate change")
+  }
+  # a very very simple GAM :)
+  jg <- mgcv::gam(
+    log_rho_c ~
+      fyear +
+        z,
+    data = df
+  )
+
+  # since we're not doing multi-chain MCMC here just generate
+  # samples x chains independent samples
+  samps <- rmvn(n_post_samples * n_chains, coef(jg), vcov(jg))
+
+  lp <- predict(jg, newdata = df_grid, type = "lpmatrix")
+  lpp <- lp %*% t(samps)
+
+  # put into array format
+  llpp <- list()
+  st <- 0
+  for (i in 1:n_chains) {
+    llpp[[i]] <- lpp[, (st + 1):(n_post_samples * i)]
+    st <- n_post_samples * i
+  }
+  arr <- do.call(abind, list(llpp, along = 3))
+  # get the dimensions in the right order
+  arr <- aperm(arr, c(2, 3, 1))
+  # give the array some useful names
+  dimnames(arr)[[3]] <- paste0("pred[", dimnames(arr)[[3]], "]")
+  # return as posterior object
+  return(posterior::as_draws_array(arr))
+}
+
+#' Make a prediction grid
+#'
+#' Generate a grid to make predictions over
+#'
+#' @param df the data.frame of the original data to use to get limits etc
+#' @return a `data.frame` with locations in covariate space to predict at
+make_prediction_grid <- function(df) {
+  n_east <- n_north <- 20
+  df_grid <- expand.grid(
+    easting = seq(
+      min(df$easting),
+      max(df$easting),
+      length.out = n_east
+    ),
+    northing = seq(
+      min(df$northing),
+      max(df$northing),
+      length.out = n_north
+    ),
+    # since we assume log_e rho_c is linear in depth
+    # we only need 2 points
+    z = c(0.25, 0.55),
+    # may want to specify this based on the time
+    # period given by the user?
+    fyear = factor(range(df$year), levels = levels(df$fyear))
+  )
+
+  # these need to be revisited depending on how we change the grid
+  df_grid$d <- 0.3
+  df_grid$area <- ((max(df$easting) - min(df$easting)) / n_east) *
+    (max(df$northing) - min(df$northing) / n_north)
+  # need to think about whether this is fixed or if
+  # marginalize?
+  # S_fez=mean(df_fix$S_fez))
+  return(df_grid)
+}
+
+#' Spatio-temporal model of soil carbon
+#'
+#' This fits our model of soil carbon. At the moment this is just a dummy
+#' function and will eventually call-out to other stuff.
+#' @param df a `data.frame` of data loaded
 #' @return df_results
 #' @export
+run_model_A <- function(df) {
+  # generate prediction grid
+  df_grid <- make_prediction_grid(df)
+
+  ## probably want to define this in the UI later (as an advanced option?)
+  # number of posterior samples to generate
+  n_post_samples <- 1000
+  # number of chains to run
+  n_chains <- 4
+  # for the dummy model we just generate n_post_samples*n_chains samples
+
+  # this returns 3D array of posterior samples (iteration) x (chain) x (variable)
+  a_post <- dummy_model(df, df_grid, n_post_samples, n_chains)
+
+  # return both bits
+  return(list(df_grid = df_grid, a_post = a_post))
+}
+
+#' Summarize results in a very simple way
 #'
-run_model_A <- function(df_loaded) {
-  # model here
-  # example output for now
-  model_result <- soccatoa::example_output
-  return(model_result)
+#' This just calculates basic sample statistics of our results
+#' [run_model_A] returns a list with 2 elements, one is an array estimates of
+#' the log carbon density over iterations, chains and prediction locations and
+#' the other is the prediction grid `data.frame`
+#'
+#' @param results a result object from [run_model_A]
+#' @param alpha the alpha level used to generate the quantile intervals
+#' @return a `data.frame` with columns:
+#' - `rho_c` carbon density
+#' - `lower_rho_c` lower quantile interval of `rho_c`
+#' - `upper_rho_c` upper quantile interval of `rho_c`
+#' - `sd_rho_c` standard deviation of `rho_c`
+#' @importFrom stats sd quantile
+#' @export
+summarize_results_simple <- function(results, alpha = 0.05) {
+  df_grid <- results$df_grid
+  a_post <- results$a_post
+
+  df_post <- as_draws_df(a_post)
+  df_post <- df_post[, -((ncol(df_post) - 2):ncol(df_post))]
+
+  df_post <- apply(df_post, 2, function(x) {
+    x <- exp(x)
+    data.frame(
+      rho_c = mean(x),
+      lower_rho_c = quantile(x, probs = c(alpha / 2)),
+      upper_rho_c = quantile(x, probs = c(1 - alpha / 2)),
+      sd_rho_c = sd(x)
+    )
+  })
+
+  df_post <- do.call(rbind, df_post)
+
+  # bind to prediction data so we can reference to time/space for plots later
+  return(cbind(df_grid, df_post))
+}
+
+#' Summarize results for graph of changes
+#'
+#' Calculates statistics needed for the changes plot
+#'
+#' @param results a result object from [run_model_A]
+#' @param a `data.frame` with columns:
+#' - `time` two time periods to be used
+#' - `total` soil carbon
+#' - `total_error` uncertainty in soil carbon
+#' @export
+#' @importFrom posterior as_draws_df
+#' @importFrom stats median aggregate
+summarize_results_change <- function(results) {
+  df_grid <- results$df_grid
+  a_post <- exp(results$a_post)
+
+  df_post <- as_draws_df(a_post)
+
+  # calculate S_cz for the two time periods
+  # apply preserves the iterations
+  df_post <- apply(
+    df_post[, -((ncol(df_post) - 2):ncol(df_post))],
+    1,
+    function(x) {
+      # get s_ci
+      x <- x * df_grid$d / df_grid$area
+      # sum over space per year
+      x <- aggregate(x, list(year = df_grid$fyear), sum)
+    }
+  )
+
+  # one row per iteration/year
+  df_post <- do.call(rbind, df_post)
+
+  # calculate summary statistics per year
+  dm <- aggregate(df_post$x, list(year = df_post$year), median)
+  derr <- aggregate(df_post$x, list(year = df_post$year), sd)
+
+  # return object for plotting
+  data.frame(
+    time = dm$year,
+    total = dm$x, # orange line
+    total_error = derr$x
+  )
+}
+
+#' Summarize results for uncertainty plot
+#'
+#' Calculates the posterior of the change in carbon
+#'
+#' @param results a result object from [run_model_A]
+#' @param a `data.frame` with columns:
+#' @export
+summarize_results_dist <- function(results) {
+  df_grid <- results$df_grid
+  a_post <- exp(results$a_post)
+
+  df_post <- as_draws_df(a_post)
+
+  # calculate S_cz for the two time periods
+  # apply preserves the iterations
+  df_post <- apply(
+    df_post[, -((ncol(df_post) - 2):ncol(df_post))],
+    1,
+    function(x) {
+      # get s_ci
+      x <- x * df_grid$d / df_grid$area
+      # sum over space per year
+      x <- aggregate(x, list(year = df_grid$fyear), sum)
+    }
+  )
+
+  # one row per iteration/year
+  df_post <- do.call(rbind, df_post)
+
+  # calculate distribution
+  diff_dist <- df_post$x[df_post$year == unique(df_post$year)[1]] -
+    df_post$x[df_post$year == unique(df_post$year)[2]]
+
+  # return object for plotting
+  data.frame(
+    iter = 1:length(diff_dist),
+    value = diff_dist
+  )
 }
 
 #' Random Gamma Distribution within a specified range
@@ -22,6 +250,7 @@ run_model_A <- function(df_loaded) {
 #'
 #' @return A numeric vector of length `n` containing random numbers from a Gamma distribution within the specified range.
 #'
+#' @importFrom stats pgamma runif qgamma
 #' @examples
 #' set.seed(123)
 #' rgammat(10, range = c(0, 10), shape = 2, rate = 1)
@@ -110,10 +339,10 @@ get_co2climate_effect <- function(
 
 #' run_model_B
 #' @description function ...
-#' @param df_loaded a df of data loaded
 #' @param yrstart start year
 #' @param yrend end year
 #' @return df_results
+#' @importFrom utils read.csv
 #' @export
 #'
 run_model_B <- function(yrstart, yrend) {

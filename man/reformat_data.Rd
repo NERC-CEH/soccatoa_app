@@ -4,10 +4,10 @@
 \alias{reformat_data}
 \title{Process data for modelling}
 \usage{
-reformat_data(df_loaded)
+reformat_data(df)
 }
 \arguments{
-\item{df_loaded}{the data as initially uploaded}
+\item{df}{the data as initially uploaded}
 }
 \value{
 a data.frame that is ready for modelling

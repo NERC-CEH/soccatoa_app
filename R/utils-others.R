@@ -161,18 +161,35 @@ clean_input <- function(x) {
 #'  - calculates log rho_c
 #'  - makes a factor year variable
 #'
-#' @param df_loaded the data as initially uploaded
+#' @param df the data as initially uploaded
 #' @return a data.frame that is ready for modelling
+#' @importFrom dplyr "%>%"
 #' @export
-reformat_data <- function(df_loaded) {
-  df <- df_loaded %>%
-    sf::st_as_sf(coords = c("lon", "lat"), crs = 4236) %>%
-    sf::st_transform(27700)
+reformat_data <- function(df) {
+  # include both northing/easting and lon/lat
+  if (!all(c("northing", "easting") %in% names(df))) {
+    df <- df %>%
+      sf::st_as_sf(coords = c("lon", "lat"), crs = 4236) %>%
+      sf::st_transform(27700)
+    df <- df %>%
+      dplyr::bind_cols(sf::st_coordinates(df), df[, c("lon", "lat")]) %>%
+      dplyr::rename(easting = X, northing = Y) %>% # Rename columns
+      sf::st_drop_geometry() # Drop the geometry column
+  }
+  if (!all(c("lon", "lat") %in% names(df))) {
+    df <- df %>%
+      sf::st_as_sf(coords = c("easting", "northing"), crs = 27700) %>%
+      sf::st_transform(4326)
+    df <- df %>%
+      dplyr::bind_cols(
+        sf::st_coordinates(df),
+        df[, c("easting", "northing")]
+      ) %>%
+      dplyr::rename(lon = X, lat = Y) %>% # Rename columns
+      sf::st_drop_geometry() # Drop the geometry column
+  }
+
   df %>%
-    # include both northing/easting and lon/lat
-    dplyr::bind_cols(sf::st_coordinates(df), df_loaded[, c("lon", "lat")]) %>%
-    dplyr::rename(easting = X, northing = Y) %>% # Rename columns
-    sf::st_drop_geometry() %>% # Drop the geometry column
     # get carbon density
     dplyr::mutate(rho_c = f_c * rho_fe) %>%
     dplyr::mutate(log_rho_c = log(rho_c), fyear = as.factor(year))
