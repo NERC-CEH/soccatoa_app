@@ -104,10 +104,10 @@ mod_results_server <- function(id, rv, x) {
     ns <- session$ns
 
     output$result <- renderPlot({
-      if (isTruthy(rv$data_results)) {
+      if (isTruthy(rv$l_results)) {
         # bind stats model and climate model results
         data_2 <- cbind(
-          summarize_results_change(rv$data_results),
+          summarize_results_change(rv$l_results),
           # this is just the example data
           data.frame(
             climate_effect = c(2, 3), # blue line (constant)
@@ -215,9 +215,9 @@ mod_results_server <- function(id, rv, x) {
     })
 
     output$uncertainty_graph <- renderPlot({
-      if (isTruthy(rv$data_results)) {
+      if (isTruthy(rv$l_results)) {
         # get distribution of differences
-        uncertainty_df <- summarize_results_dist(rv$data_results)
+        uncertainty_df <- summarize_results_dist(rv$l_results)
 
         ggplot2::ggplot(uncertainty_df) +
           ggplot2::geom_density(
@@ -252,8 +252,8 @@ mod_results_server <- function(id, rv, x) {
     })
 
     output$map_result <- leaflet::renderLeaflet({
-      if (isTruthy(rv$data_results)) {
-        data <- summarize_results_simple(rv$data_results) %>%
+      if (isTruthy(rv$l_results)) {
+        data <- summarize_results_simple(rv$l_results) %>%
           dplyr::filter(z == 0.55) %>%
           sf::st_as_sf(coords = c("easting", "northing"), crs = 27700) %>%
           sf::st_transform(crs = 4326) %>%

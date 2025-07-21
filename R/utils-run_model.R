@@ -107,11 +107,11 @@ run_model_A <- function(df) {
   n_chains <- 4
   # for the dummy model we just generate n_post_samples*n_chains samples
 
-  # this returns 3D array of (iteration) x (chain) x (variable)
-  model_result <- dummy_model(df, df_grid, n_post_samples, n_chains)
+  # this returns 3D array of posterior samples (iteration) x (chain) x (variable)
+  a_post <- dummy_model(df, df_grid, n_post_samples, n_chains)
 
   # return both bits
-  list(df_grid = df_grid, results = model_result)
+  return(list(df_grid = df_grid, a_post = a_post))
 }
 
 #' Summarize results in a very simple way
@@ -132,12 +132,12 @@ run_model_A <- function(df) {
 #' @export
 summarize_results_simple <- function(results, alpha = 0.05) {
   df_grid <- results$df_grid
-  results <- results$results
+  a_post <- results$a_post
 
-  results <- as_draws_df(results)
-  results <- results[, -((ncol(results) - 2):ncol(results))]
+  df_post <- as_draws_df(a_post)
+  df_post <- df_post[, -((ncol(df_post) - 2):ncol(df_post))]
 
-  results <- apply(results, 2, function(x) {
+  df_post <- apply(df_post, 2, function(x) {
     x <- exp(x)
     data.frame(
       rho_c = mean(x),
@@ -147,10 +147,10 @@ summarize_results_simple <- function(results, alpha = 0.05) {
     )
   })
 
-  results <- do.call(rbind, results)
+  df_post <- do.call(rbind, df_post)
 
   # bind to prediction data so we can reference to time/space for plots later
-  cbind(df_grid, results)
+  return(cbind(df_grid, df_post))
 }
 
 #' Summarize results for graph of changes
@@ -167,25 +167,29 @@ summarize_results_simple <- function(results, alpha = 0.05) {
 #' @importFrom stats median aggregate
 summarize_results_change <- function(results) {
   df_grid <- results$df_grid
-  md <- exp(results$results)
+  a_post <- exp(results$a_post)
 
-  dd <- as_draws_df(md)
+  df_post <- as_draws_df(a_post)
 
   # calculate S_cz for the two time periods
   # apply preserves the iterations
-  dd <- apply(dd[, -((ncol(dd) - 2):ncol(dd))], 1, function(x) {
-    # get s_ci
-    x <- x * df_grid$d / df_grid$area
-    # sum over space per year
-    x <- aggregate(x, list(year = df_grid$fyear), sum)
-  })
+  df_post <- apply(
+    df_post[, -((ncol(df_post) - 2):ncol(df_post))],
+    1,
+    function(x) {
+      # get s_ci
+      x <- x * df_grid$d / df_grid$area
+      # sum over space per year
+      x <- aggregate(x, list(year = df_grid$fyear), sum)
+    }
+  )
 
   # one row per iteration/year
-  dd <- do.call(rbind, dd)
+  df_post <- do.call(rbind, df_post)
 
   # calculate summary statistics per year
-  dm <- aggregate(dd$x, list(year = dd$year), median)
-  derr <- aggregate(dd$x, list(year = dd$year), sd)
+  dm <- aggregate(df_post$x, list(year = df_post$year), median)
+  derr <- aggregate(df_post$x, list(year = df_post$year), sd)
 
   # return object for plotting
   data.frame(
@@ -204,25 +208,29 @@ summarize_results_change <- function(results) {
 #' @export
 summarize_results_dist <- function(results) {
   df_grid <- results$df_grid
-  md <- exp(results$results)
+  a_post <- exp(results$a_post)
 
-  dd <- as_draws_df(md)
+  df_post <- as_draws_df(a_post)
 
   # calculate S_cz for the two time periods
   # apply preserves the iterations
-  dd <- apply(dd[, -((ncol(dd) - 2):ncol(dd))], 1, function(x) {
-    # get s_ci
-    x <- x * df_grid$d / df_grid$area
-    # sum over space per year
-    x <- aggregate(x, list(year = df_grid$fyear), sum)
-  })
+  df_post <- apply(
+    df_post[, -((ncol(df_post) - 2):ncol(df_post))],
+    1,
+    function(x) {
+      # get s_ci
+      x <- x * df_grid$d / df_grid$area
+      # sum over space per year
+      x <- aggregate(x, list(year = df_grid$fyear), sum)
+    }
+  )
 
   # one row per iteration/year
-  dd <- do.call(rbind, dd)
+  df_post <- do.call(rbind, df_post)
 
   # calculate distribution
-  diff_dist <- dd$x[dd$year == unique(dd$year)[1]] -
-    dd$x[dd$year == unique(dd$year)[2]]
+  diff_dist <- df_post$x[df_post$year == unique(df_post$year)[1]] -
+    df_post$x[df_post$year == unique(df_post$year)[2]]
 
   # return object for plotting
   data.frame(
