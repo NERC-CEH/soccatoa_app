@@ -4,12 +4,12 @@
 \alias{dummy_model}
 \title{Dummy model fitted based on a standard GAM}
 \usage{
-dummy_model(df_loaded, predgrid, n_post_samples, n_chains)
+dummy_model(df, df_grid, n_post_samples, n_chains)
 }
 \arguments{
-\item{df_loaded}{a `data.frame` of data}
+\item{df}{a `data.frame` of data}
 
-\item{predgrid}{prediction grid to use}
+\item{df_grid}{prediction grid to use}
 
 \item{n_post_samples}{how many posterior samples to use}
 

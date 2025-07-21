@@ -4,10 +4,10 @@
 \alias{make_prediction_grid}
 \title{Make a prediction grid}
 \usage{
-make_prediction_grid(df_loaded)
+make_prediction_grid(df)
 }
 \arguments{
-\item{df_loaded}{the data.frame of the original data to use to get limits etc}
+\item{df}{the data.frame of the original data to use to get limits etc}
 }
 \value{
 a `data.frame` with locations in covariate space to predict at
