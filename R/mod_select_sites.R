@@ -176,7 +176,7 @@ mod_select_sites_server <- function(id, rv, x) {
               ns("sites_picker"),
               label = "Sites available in the database:",
               choices = sort(unique(database_sites$site_id)),
-              multiple = TRUE,
+              multiple = FALSE,
               width = "100%"
             )
           )
@@ -187,7 +187,7 @@ mod_select_sites_server <- function(id, rv, x) {
             ns("sites_picker"),
             label = "Sites available in the database:",
             choices = NULL,
-            multiple = TRUE,
+            multiple = FALSE,
             width = "80%"
           ),
           p(
