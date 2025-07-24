@@ -54,6 +54,14 @@ app_ui <- function(request) {
             mod_tab_home_ui("tab_home_1")
           ),
           tabPanel(
+            "Upload",
+            mod_tab_upload_ui("tab_upload_1")
+          ),
+          tabPanel(
+            "Explore Database",
+            mod_tab_explore_db_ui("tab_explore_db_1")
+          ),
+          tabPanel(
             "Run Model",
             mod_tab_model_ui("tab_model_1")
           )

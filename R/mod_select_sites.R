@@ -122,23 +122,12 @@ mod_select_sites_server <- function(id, rv, x) {
     outputOptions(output, "panelCondition_wrongfile", suspendWhenHidden = FALSE)
 
     #######################################################
-    ############ optional step: uploading your own data ###
+    ############ optional step: redirect to the uploading of your own data ###
     #######################################################
 
-    upload_dataset_modal <- function() {
-      ns <- session$ns
-      modalDialog(
-        tagList(
-          mod_upload_to_DB_ui("upload_to_DB_1")
-        ),
-        size = "xl",
-        easyClose = T,
-        footer = NULL
-      )
-    }
-
-    observeEvent(input$upload_data, label = "open upload modal", {
-      showModal(upload_dataset_modal())
+    observeEvent(input$upload_data, label = "Go to upload page", {
+      #go to upload tab
+      updateNavlistPanel(session = x, "soccatoapage", selected = "Upload")
     })
 
     observeEvent(

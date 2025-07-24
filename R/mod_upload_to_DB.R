@@ -14,19 +14,12 @@ mod_upload_to_DB_ui <- function(id) {
     includeScript("inst/app/www/script.js"),
 
     # Title
-    fluidRow(
-      column(
-        10,
-        offset = 1,
-        h5("Upload your dataset in our database")
-      )
-    ),
+    h5("Upload your dataset in our database"),
 
     # bar to load the file
     fluidRow(
       column(
-        10,
-        offset = 1,
+        12,
 
         fluidRow(
           column(
@@ -55,7 +48,7 @@ mod_upload_to_DB_ui <- function(id) {
             3,
             downloadButton(
               ns("download_template"),
-              "Example template",
+              "Template",
               class = "btn-info",
               width = "100%"
             )
@@ -70,9 +63,7 @@ mod_upload_to_DB_ui <- function(id) {
       ns = NS(id),
       fluidRow(
         column(
-          10,
-          offset = 1,
-
+          12,
           p(
             "The files you uploaded doesn't seem to have the right format",
             style = "text-align:justify;"
@@ -89,8 +80,7 @@ mod_upload_to_DB_ui <- function(id) {
       ns = NS(id),
       fluidRow(
         column(
-          10,
-          offset = 1,
+          12,
           DT::DTOutput(ns("cols_table")),
           div(
             style = "text-align: right;",
@@ -113,8 +103,7 @@ mod_upload_to_DB_ui <- function(id) {
       ns = NS(id),
       fluidRow(
         column(
-          10,
-          offset = 1,
+          12,
           fluidRow(
             column(
               6,
@@ -190,8 +179,7 @@ mod_upload_to_DB_ui <- function(id) {
       ns = NS(id),
 
       fluidRow(column(
-        10,
-        offset = 1,
+        12,
 
         bslib::navset_card_tab(
           header = NULL,
@@ -221,8 +209,7 @@ mod_upload_to_DB_ui <- function(id) {
 
       fluidRow(
         column(
-          10,
-          offset = 1,
+          12,
           bslib::card(
             height = 300,
             bslib::card_body(
@@ -257,8 +244,7 @@ mod_upload_to_DB_ui <- function(id) {
       ns = NS(id),
       fluidRow(
         column(
-          10,
-          offset = 1,
+          12,
           bslib::card(
             height = 300,
             bslib::card_body(
