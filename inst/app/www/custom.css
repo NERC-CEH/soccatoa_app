@@ -78,7 +78,7 @@ body {
     padding-left: 20px;
     padding-top: 5px;
     padding-bottom: 20px;
-    height: calc(100vh - 180px); /* Ensures the tab content fills the height minus logos (50) #calc(100vh - 50px)*/
+    height: calc(100vh - 160px); /* Ensures the tab content fills the height minus logos (50) #calc(100vh - 50px)*/
     max-width: 100%;
     overflow-y: auto; /* Allows scrolling inside content */
     overflow-x: hidden;  /* don't allow horizontal scrolling */
@@ -92,7 +92,7 @@ body {
 
 /* Footer styles */
 .footer {
-    height: 50px;  /* Set fixed height for footer */
+    height: 25px;  /* Set fixed height for footer */
     background-color: #fff;
     text-align: center;
     padding: 0;
@@ -115,7 +115,7 @@ body {
 
 /* Style for logos*/
 .footer-logo {
-    height: 40px;             /* Set maximum height for logos */
+    height: 20px;             /* Set maximum height for logos */
     max-width: 100%;          /* Ensures logos resize within the footer width */
     object-fit: contain;      /* Ensures aspect ratio is maintained */
     margin: 5px 5px;            /* Adds spacing */
