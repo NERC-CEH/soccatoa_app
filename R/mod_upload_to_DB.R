@@ -14,7 +14,7 @@ mod_upload_to_DB_ui <- function(id) {
     includeScript("inst/app/www/script.js"),
 
     # Title
-    h5("Upload your dataset in our database"),
+    h5("Upload your dataset to our database"),
 
     # bar to load the file
     fluidRow(
@@ -27,7 +27,7 @@ mod_upload_to_DB_ui <- function(id) {
             fileInput(
               ns("upload"),
               label = NULL,
-              buttonLabel = "upload file",
+              buttonLabel = "select file",
               accept = ".csv",
               placeholder = "...",
               width = "100%",
@@ -38,7 +38,7 @@ mod_upload_to_DB_ui <- function(id) {
             3,
             actionButton(
               ns("submit"),
-              label = "submit",
+              label = "check file",
               width = "100%",
               style = "margin-right: 0px; font-size:95%;",
               class = "btn-info"

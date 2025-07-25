@@ -54,7 +54,7 @@ app_ui <- function(request) {
             mod_tab_home_ui("tab_home_1")
           ),
           tabPanel(
-            "Upload",
+            "Upload New Data",
             mod_tab_upload_ui("tab_upload_1")
           ),
           tabPanel(
