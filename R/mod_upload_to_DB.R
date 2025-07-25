@@ -25,7 +25,7 @@ mod_upload_to_DB_ui <- function(id) {
           column(
             6,
             fileInput(
-              ns("upload"),
+              ns("select"),
               label = NULL,
               buttonLabel = "select file",
               accept = ".csv",
