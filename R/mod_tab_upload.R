@@ -11,14 +11,16 @@ mod_tab_upload_ui <- function(id) {
   ns <- NS(id)
 
   tagList(
-
     #if logged out
     conditionalPanel(
       condition = "output.panelCondition_logged_out",
       ns = NS(id),
       div(
         class = "text-content",
-        h4("You must register or login in order to run the model", style = "color: red;"),
+        h4(
+          "You must register or login in order to run the model",
+          style = "color: red;"
+        ),
       )
     ),
 
@@ -29,22 +31,25 @@ mod_tab_upload_ui <- function(id) {
       mod_upload_to_DB_ui("upload_to_DB_1")
     )
 
-#close module
+    #close module
   )
 }
 
 #' tab_upload Server Functions
 #'
 #' @noRd
-mod_tab_upload_server <- function(id, rv, x){
-  moduleServer(id, session = x, function(input, output, session){
+mod_tab_upload_server <- function(id, rv, x) {
+  moduleServer(id, session = x, function(input, output, session) {
     ns <- session$ns
 
     output$panelCondition_logged_out <- reactive({
       rv$page_showing == "logged_out"
     })
-    outputOptions(output, "panelCondition_logged_out", suspendWhenHidden = FALSE)
-
+    outputOptions(
+      output,
+      "panelCondition_logged_out",
+      suspendWhenHidden = FALSE
+    )
   })
 }
 

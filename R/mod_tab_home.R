@@ -20,7 +20,7 @@ mod_tab_home_ui <- function(id) {
              To make such schemes verifiable and free from greenwashing, reputable codes need to be established to ensure monitoring is done transparently and with appropriate statistical considerations (Popkin 2023).
              The IEM call is specifically seeking research which provides information on the sequestration ... of carbon in soils in a timely and suitably scaled manner, for both policy audiences and carbon markets and improves on current ...
                methodologies for assessing soil for use in both policy making and carbon markets"
-          ),
+        ),
         p(
           " We propose to create a software tool (a capital asset) for the accreditation of carbon credits claimed on the basis of changes in soil organic carbon (SOC).
              This will capture the joint expertise of UKCEH, BioSS and the University of Glasgow in soil analysis, statistical sampling design, geostatistics, uncertainty quantification, and environmental economics.
@@ -29,8 +29,6 @@ mod_tab_home_ui <- function(id) {
         )
       )
     )
-
-
 
     # close
   )

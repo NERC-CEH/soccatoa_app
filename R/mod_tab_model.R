@@ -14,8 +14,10 @@ mod_tab_model_ui <- function(id) {
     conditionalPanel(
       condition = "output.panelCondition_logged_out",
       ns = NS(id),
-      h4("You must register or login in order to run the model", style = "color: red;"),
-
+      h4(
+        "You must register or login in order to run the model",
+        style = "color: red;"
+      ),
     ),
 
     # IF LOGGED IN
@@ -44,7 +46,11 @@ mod_tab_model_server <- function(id, rv, x) {
     output$panelCondition_logged_out <- reactive({
       rv$page_showing == "logged_out"
     })
-    outputOptions(output, "panelCondition_logged_out", suspendWhenHidden = FALSE)
+    outputOptions(
+      output,
+      "panelCondition_logged_out",
+      suspendWhenHidden = FALSE
+    )
 
     output$panelCondition_logged_in <- reactive({
       rv$page_showing == "logged_in"
