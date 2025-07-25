@@ -37,7 +37,7 @@ mod_upload_to_DB_ui <- function(id) {
           column(
             3,
             actionButton(
-              ns("submit"),
+              ns("check_file"),
               label = "check file",
               width = "100%",
               style = "margin-right: 0px; font-size:95%;",
