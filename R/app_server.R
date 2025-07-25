@@ -32,7 +32,7 @@ app_server <- function(input, output, session) {
   ###########################
 
   #### ordered by tabs ####
-  #"Home"
+  # "Home"
   mod_tab_home_server("tab_home_1", rv = rv, x = session)
   #upload data
   mod_tab_upload_server("tab_upload_1", rv = rv, x = session)
