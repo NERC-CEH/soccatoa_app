@@ -356,12 +356,12 @@ mod_upload_to_DB_server <- function(id, rv, x) {
 
     #### uploaded file ###
     observeEvent(
-      input$submit,
+      input$check_file,
       ignoreInit = T,
       label = "when uploaded file update rv",
       {
         loaded_data <- readr::read_csv(
-          input$upload$datapath,
+          input$select$datapath,
           show_col_types = FALSE
         )
         #trim all NAS at the bottom (happens sometimes in Excel)
@@ -1052,8 +1052,8 @@ mod_upload_to_DB_server <- function(id, rv, x) {
         #save the loaded data into the system
         load(here::here("data/database_sites.rda"))
 
-        # format data for modelling
-        data_to_save <- reformat_data(data_to_save)
+        # # format data for modelling
+        # data_to_save <- reformat_data(data_to_save)
 
         # Check for duplicates (ignoring 'user' column)
         temp_all <- dplyr::select(database_sites, -user)
