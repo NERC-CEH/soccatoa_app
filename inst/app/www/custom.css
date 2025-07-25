@@ -51,7 +51,7 @@ body {
 
 /* style side bar */
 .navlist-container .nav-stacked {
-    height: calc(100vh - 100px); /* Full height for the navigation panel  #calc(100vh - 50px) */
+    height: calc(100vh - 80px); /* Full height for the navigation panel  #calc(100vh - 50px) */
     overflow-y: auto; /* Enables scrolling if content overflows */
     background-color: #EAEFEC !important; /* color background bar major */
     padding-left: 20px;  /* Add padding to the left */
@@ -60,12 +60,12 @@ body {
 
 /* style side bar text */
 .navlist-container .nav-stacked .nav-item {
-  font-size: 20px; /* Set the font size for the nav items */
+  font-size: 18px; /* Set the font size for the nav items */
 }
 
 /* style side bar text of selection*/
 .navlist-container .nav-stacked .nav-item .active {
-  font-size: 20px; /* Set the font size for the nav items */
+  font-size: 18px; /* Set the font size for the nav items */
   background-color: #0483A4 !important;
   color: #EAEFEC;
 }
@@ -76,9 +76,9 @@ body {
 .navlist-container .tab-content {
     padding-right: 20px; /* Add padding to the right */
     padding-left: 20px;
-    padding-top: 5px;
-    padding-bottom: 20px;
-    height: calc(100vh - 180px); /* Ensures the tab content fills the height minus logos (50) #calc(100vh - 50px)*/
+    padding-top: 0px;
+    padding-bottom: 0px;
+    height: calc(100vh - 155px); /* Ensures the tab content fills the height minus logos (50) #calc(100vh - 50px)*/
     max-width: 100%;
     overflow-y: auto; /* Allows scrolling inside content */
     overflow-x: hidden;  /* don't allow horizontal scrolling */
@@ -92,7 +92,7 @@ body {
 
 /* Footer styles */
 .footer {
-    height: 50px;  /* Set fixed height for footer */
+    height: 25px;  /* Set fixed height for footer */
     background-color: #fff;
     text-align: center;
     padding: 0;
@@ -115,25 +115,12 @@ body {
 
 /* Style for logos*/
 .footer-logo {
-    height: 40px;             /* Set maximum height for logos */
+    height: 20px;             /* Set maximum height for logos */
     max-width: 100%;          /* Ensures logos resize within the footer width */
     object-fit: contain;      /* Ensures aspect ratio is maintained */
     margin: 5px 5px;            /* Adds spacing */
 }
 
-
-/*****************************/
-/* Header */
-/*****************************/
-
-/* Footer styles */
-.header {
-    height: 50px;
-    background-color: #EAEFEC;
-    flex-shrink: 0;  /* Prevent footer from shrinking */
-    align-items: center; !important
-    width: 100%; /* Ensure full width */
-}
 
 /*****************************/
 /* buttons */
@@ -310,9 +297,3 @@ body {
   color: #0483A4 !important;
   font-weight: bold;
 }
-
-
-
-
-
-

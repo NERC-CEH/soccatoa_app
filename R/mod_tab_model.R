@@ -14,14 +14,10 @@ mod_tab_model_ui <- function(id) {
     conditionalPanel(
       condition = "output.panelCondition_logged_out",
       ns = NS(id),
-      h3("SOCCATOA"),
-      div(
-        img(src = "www/example.jpg", class = "wrapped-image"),
-        div(
-          class = "text-content",
-          p(lorem::ipsum(5, 7))
-        )
-      )
+      h4(
+        "You must register or login in order to run the model",
+        style = "color: red;"
+      ),
     ),
 
     # IF LOGGED IN

@@ -14,27 +14,20 @@ mod_upload_to_DB_ui <- function(id) {
     includeScript("inst/app/www/script.js"),
 
     # Title
-    fluidRow(
-      column(
-        10,
-        offset = 1,
-        h5("Upload your dataset in our database")
-      )
-    ),
+    h5("Upload your dataset to our database"),
 
     # bar to load the file
     fluidRow(
       column(
-        10,
-        offset = 1,
+        12,
 
         fluidRow(
           column(
             6,
             fileInput(
-              ns("upload"),
+              ns("select"),
               label = NULL,
-              buttonLabel = "upload file",
+              buttonLabel = "select file",
               accept = ".csv",
               placeholder = "...",
               width = "100%",
@@ -44,8 +37,8 @@ mod_upload_to_DB_ui <- function(id) {
           column(
             3,
             actionButton(
-              ns("submit"),
-              label = "submit",
+              ns("check_file"),
+              label = "check file",
               width = "100%",
               style = "margin-right: 0px; font-size:95%;",
               class = "btn-info"
@@ -55,7 +48,7 @@ mod_upload_to_DB_ui <- function(id) {
             3,
             downloadButton(
               ns("download_template"),
-              "Example template",
+              "Template",
               class = "btn-info",
               width = "100%"
             )
@@ -70,9 +63,7 @@ mod_upload_to_DB_ui <- function(id) {
       ns = NS(id),
       fluidRow(
         column(
-          10,
-          offset = 1,
-
+          12,
           p(
             "The files you uploaded doesn't seem to have the right format",
             style = "text-align:justify;"
@@ -89,8 +80,7 @@ mod_upload_to_DB_ui <- function(id) {
       ns = NS(id),
       fluidRow(
         column(
-          10,
-          offset = 1,
+          12,
           DT::DTOutput(ns("cols_table")),
           div(
             style = "text-align: right;",
@@ -113,8 +103,7 @@ mod_upload_to_DB_ui <- function(id) {
       ns = NS(id),
       fluidRow(
         column(
-          10,
-          offset = 1,
+          12,
           fluidRow(
             column(
               6,
@@ -190,8 +179,7 @@ mod_upload_to_DB_ui <- function(id) {
       ns = NS(id),
 
       fluidRow(column(
-        10,
-        offset = 1,
+        12,
 
         bslib::navset_card_tab(
           header = NULL,
@@ -221,8 +209,7 @@ mod_upload_to_DB_ui <- function(id) {
 
       fluidRow(
         column(
-          10,
-          offset = 1,
+          12,
           bslib::card(
             height = 300,
             bslib::card_body(
@@ -257,8 +244,7 @@ mod_upload_to_DB_ui <- function(id) {
       ns = NS(id),
       fluidRow(
         column(
-          10,
-          offset = 1,
+          12,
           bslib::card(
             height = 300,
             bslib::card_body(
@@ -370,12 +356,12 @@ mod_upload_to_DB_server <- function(id, rv, x) {
 
     #### uploaded file ###
     observeEvent(
-      input$submit,
+      input$check_file,
       ignoreInit = T,
       label = "when uploaded file update rv",
       {
         loaded_data <- readr::read_csv(
-          input$upload$datapath,
+          input$select$datapath,
           show_col_types = FALSE
         )
         #trim all NAS at the bottom (happens sometimes in Excel)
@@ -1066,8 +1052,8 @@ mod_upload_to_DB_server <- function(id, rv, x) {
         #save the loaded data into the system
         load(here::here("data/database_sites.rda"))
 
-        # format data for modelling
-        data_to_save <- reformat_data(data_to_save)
+        # # format data for modelling
+        # data_to_save <- reformat_data(data_to_save)
 
         # Check for duplicates (ignoring 'user' column)
         temp_all <- dplyr::select(database_sites, -user)

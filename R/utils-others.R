@@ -171,9 +171,14 @@ reformat_data <- function(df) {
     df <- df %>%
       sf::st_as_sf(coords = c("lon", "lat"), crs = 4236) %>%
       sf::st_transform(27700)
+
+    coords <- df %>%
+      sf::st_coordinates()
+
+    df$easting <- coords[, 1]
+    df$northing <- coords[, 2]
+
     df <- df %>%
-      dplyr::bind_cols(sf::st_coordinates(df), df[, c("lon", "lat")]) %>%
-      dplyr::rename(easting = X, northing = Y) %>% # Rename columns
       sf::st_drop_geometry() # Drop the geometry column
   }
   if (!all(c("lon", "lat") %in% names(df))) {
