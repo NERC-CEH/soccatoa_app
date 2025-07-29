@@ -169,28 +169,27 @@ reformat_data <- function(df) {
   # include both northing/easting and lon/lat
   if (!all(c("northing", "easting") %in% names(df))) {
     df <- df %>%
-      sf::st_as_sf(coords = c("lon", "lat"), crs = 4236) %>%
+      sf::st_as_sf(coords = c("lon", "lat"),
+                   crs = 4236,
+                   remove = FALSE) %>%
       sf::st_transform(27700)
     df <- df %>%
-      dplyr::bind_cols(sf::st_coordinates(df), df[, c("lon", "lat")]) %>%
+      dplyr::bind_cols(sf::st_coordinates(df)) %>%
       dplyr::rename(easting = X, northing = Y) %>% # Rename columns
       sf::st_drop_geometry() # Drop the geometry column
   }
   if (!all(c("lon", "lat") %in% names(df))) {
     df <- df %>%
-      sf::st_as_sf(coords = c("easting", "northing"), crs = 27700) %>%
+      sf::st_as_sf(coords = c("easting", "northing"),
+                   crs = 27700,
+                   remove = FALSE) %>%
       sf::st_transform(4326)
     df <- df %>%
       dplyr::bind_cols(
         sf::st_coordinates(df),
-        df[, c("easting", "northing")]
       ) %>%
       dplyr::rename(lon = X, lat = Y) %>% # Rename columns
       sf::st_drop_geometry() # Drop the geometry column
   }
-
-  df %>%
-    # get carbon density
-    dplyr::mutate(rho_c = f_c * rho_fe) %>%
-    dplyr::mutate(log_rho_c = log(rho_c), fyear = as.factor(year))
+  df
 }

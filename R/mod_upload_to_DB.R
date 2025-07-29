@@ -1108,7 +1108,8 @@ mod_upload_to_DB_server <- function(id, rv, x) {
         )
 
         #save
-        database_sites <- rbind(database_sites, data_to_save_unique)
+cat(names(database_sites), "\n")
+cat(names(data_to_save_unique), "\n")
         database_sites <- janitor::remove_empty(database_sites, which = "rows")
         rv$all_data <- database_sites
 
