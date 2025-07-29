@@ -16,7 +16,6 @@
 #' @importFrom posterior as_draws_array
 #' @export
 dummy_model <- function(df, df_grid, n_post_samples, n_chains) {
-
   # get carbon density and factor year
   df <- df %>%
     dplyr::mutate(rho_c = f_c * rho_fe) %>%
