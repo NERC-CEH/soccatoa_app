@@ -19,8 +19,7 @@ dummy_model <- function(df, df_grid, n_post_samples, n_chains) {
   # get carbon density and factor year
   df <- df %>%
     dplyr::mutate(rho_c = f_c * rho_fe) %>%
-    dplyr::mutate(log_rho_c = log(rho_c),
-                  fyear = as.factor(year))
+    dplyr::mutate(log_rho_c = log(rho_c), fyear = as.factor(year))
   # check
   v_year <- unique(df$fyear)
   if (length(v_year) < 2) {
