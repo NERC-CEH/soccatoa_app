@@ -178,9 +178,11 @@ reformat_data <- function(df) {
   }
   if (!all(c("lon", "lat") %in% names(df))) {
     df <- df %>%
-      sf::st_as_sf(coords = c("easting", "northing"),
-                   crs = 27700,
-                   remove = FALSE) %>%
+      sf::st_as_sf(
+        coords = c("easting", "northing"),
+        crs = 27700,
+        remove = FALSE
+      ) %>%
       sf::st_transform(4326)
     df <- df %>%
       dplyr::bind_cols(
