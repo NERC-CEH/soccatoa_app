@@ -189,7 +189,7 @@ ne_to_latlon <- function(df) {
 #' @return a data.frame that is ready for modelling
 #' @importFrom dplyr "%>%"
 #' @export
-latlon_to_ne <- function(df, crs=27700) {
+latlon_to_ne <- function(df, crs = 27700) {
   if (!all(c("northing", "easting") %in% names(df))) {
     df <- df %>%
       sf::st_as_sf(coords = c("lon", "lat"), crs = 4236, remove = FALSE) %>%
@@ -201,4 +201,3 @@ latlon_to_ne <- function(df, crs=27700) {
   }
   df
 }
-

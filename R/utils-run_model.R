@@ -16,7 +16,6 @@
 #' @importFrom posterior as_draws_array
 #' @export
 dummy_model <- function(df, df_grid, n_post_samples, n_chains) {
-
   # a very very simple GAM :)
   jg <- mgcv::gam(
     log_rho_c ~
@@ -93,7 +92,6 @@ make_prediction_grid <- function(df) {
 #' @return df_results
 #' @export
 run_model_A <- function(df) {
-
   # make sure we have northing/easting
   df <- latlon_to_ne(df)
 
