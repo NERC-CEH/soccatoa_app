@@ -92,9 +92,6 @@ make_prediction_grid <- function(df) {
 #' @return df_results
 #' @export
 run_model_A <- function(df) {
-  # make sure we have northing/easting
-  df <- latlon_to_ne(df)
-
   # get carbon density and factor year
   df <- df %>%
     dplyr::mutate(rho_c = f_c * rho_fe) %>%
