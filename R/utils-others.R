@@ -149,39 +149,22 @@ clean_input <- function(x) {
   }
 }
 
-#' Process data for modelling
+#' Northing/easting to lat/lon
 #'
-#' Maybe want to put this elsewhere, but a little bit of data fiddling.
-#'
-#' What this function does:
-#'  - assumes lat/lon columns, EPSG4326
-#'  - project to UK grid EPSG27700
-#'  - creates new columns called easting and northing
-#'  - creates rho_c = f_c*rho_fe
-#'  - calculates log rho_c
-#'  - makes a factor year variable
+#' A little bit of data fiddling to project from UK grid EPSG27700 to lat/lon
+#' columns, EPSG4326. This is for storage in the DB.
 #'
 #' @param df the data as initially uploaded
 #' @return a data.frame that is ready for modelling
 #' @importFrom dplyr "%>%"
 #' @export
-reformat_data <- function(df) {
-  # include both northing/easting and lon/lat
-  if (!all(c("northing", "easting") %in% names(df))) {
-    df <- df %>%
-      sf::st_as_sf(coords = c("lon", "lat"), crs = 4236, remove = FALSE) %>%
-      sf::st_transform(27700)
-    df <- df %>%
-      dplyr::bind_cols(sf::st_coordinates(df)) %>%
-      dplyr::rename(easting = X, northing = Y) %>% # Rename columns
-      sf::st_drop_geometry() # Drop the geometry column
-  }
+ne_to_latlon <- function(df) {
+  # convert northing/easting to lon/lat if we don't have that
   if (!all(c("lon", "lat") %in% names(df))) {
     df <- df %>%
       sf::st_as_sf(
         coords = c("easting", "northing"),
-        crs = 27700,
-        remove = FALSE
+        crs = 27700
       ) %>%
       sf::st_transform(4326)
     df <- df %>%
@@ -189,7 +172,33 @@ reformat_data <- function(df) {
         sf::st_coordinates(df),
       ) %>%
       dplyr::rename(lon = X, lat = Y) %>% # Rename columns
+      dplyr::select(-c(easting, northing)) %>% # drop northing/easting
       sf::st_drop_geometry() # Drop the geometry column
   }
   df
 }
+
+#' Lat/lon to northing/easting
+#'
+#' A little bit of data fiddling to project from lat/lon columns, EPSG4326 to
+#' (by default) UK grid EPSG27700. This is for the model to use.
+#'
+#' @param df the data as initially uploaded
+#' @param crs the coordinate reference system to project into (can be any
+#' format accepted by [sf::st_transform]
+#' @return a data.frame that is ready for modelling
+#' @importFrom dplyr "%>%"
+#' @export
+latlon_to_ne <- function(df, crs=27700) {
+  if (!all(c("northing", "easting") %in% names(df))) {
+    df <- df %>%
+      sf::st_as_sf(coords = c("lon", "lat"), crs = 4236, remove = FALSE) %>%
+      sf::st_transform(crs)
+    df <- df %>%
+      dplyr::bind_cols(sf::st_coordinates(df)) %>%
+      dplyr::rename(easting = X, northing = Y) %>% # Rename columns
+      sf::st_drop_geometry() # Drop the geometry column
+  }
+  df
+}
+
