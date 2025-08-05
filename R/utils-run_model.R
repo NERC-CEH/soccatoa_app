@@ -16,11 +16,6 @@
 #' @importFrom posterior as_draws_array
 #' @export
 dummy_model <- function(df, df_grid, n_post_samples, n_chains) {
-  # check
-  v_year <- unique(df$fyear)
-  if (length(v_year) < 2) {
-    stop("You need at least 2 time points to estimate change")
-  }
   # a very very simple GAM :)
   jg <- mgcv::gam(
     log_rho_c ~
@@ -47,7 +42,7 @@ dummy_model <- function(df, df_grid, n_post_samples, n_chains) {
   # get the dimensions in the right order
   arr <- aperm(arr, c(2, 3, 1))
   # give the array some useful names
-  dimnames(arr)[[3]] <- paste0("pred[", dimnames(arr)[[3]], "]")
+  dimnames(arr)[[3]] <- paste0("pred[", 1:dim(arr)[3], "]")
   # return as posterior object
   return(posterior::as_draws_array(arr))
 }
@@ -97,6 +92,16 @@ make_prediction_grid <- function(df) {
 #' @return df_results
 #' @export
 run_model_A <- function(df) {
+  # get carbon density and factor year
+  df <- df %>%
+    dplyr::mutate(rho_c = f_c * rho_fe) %>%
+    dplyr::mutate(log_rho_c = log(rho_c), fyear = as.factor(year))
+  # check
+  v_year <- unique(df$fyear)
+  if (length(v_year) < 2) {
+    stop("You need at least 2 time points to estimate change")
+  }
+
   # generate prediction grid
   df_grid <- make_prediction_grid(df)
 

@@ -92,11 +92,12 @@ mod_run_model_server <- function(id, rv, x) {
         as.numeric(input$year_end_filter)
       )
 
-      # run models
+      # select temporal data
       df_selected <-
         rv$my_data %>%
         dplyr::filter(year >= min(years) & year <= max(years))
 
+      # run models
       rv$l_results <- soccatoa::run_model_A(df = df_selected)
 
       # rv$data_results_B <- soccatoa::run_model_B(df = df_selected,

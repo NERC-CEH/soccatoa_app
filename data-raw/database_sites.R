@@ -9,6 +9,8 @@ database_sites <- data.frame(
   "year" = NA, # or date "YYYY-mm-dd"
   "lon" = NA,
   "lat" = NA,
+  "easting" = NA,
+  "northing" = NA,
   "z" = NA,
   "d" = NA,
   "rho_fe" = NA,
