@@ -1066,8 +1066,9 @@ mod_upload_to_DB_server <- function(id, rv, x) {
         #save the loaded data into the system
         load(here::here("data/database_sites.rda"))
 
-        # format data for modelling
-        data_to_save <- reformat_data(data_to_save)
+        # ensure we save both lat/lon and E/Nto database
+        data_to_save <- ne_to_latlon(data_to_save)
+        data_to_save <- latlon_to_ne(data_to_save)
 
         # Check for duplicates (ignoring 'user' column)
         temp_all <- dplyr::select(database_sites, -user)
