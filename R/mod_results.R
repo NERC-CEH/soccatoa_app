@@ -218,6 +218,11 @@ mod_results_server <- function(id, rv, x) {
             color = "#37a635",
             size = 1.5
           ) +
+           ggplot2::geom_density(
+            ggplot2::aes(-1.0*value_clim_eff),
+            color = "#F49633",
+            size = 1.5
+          ) +
           ggplot2::labs(
             title = "Distribution of difference\nin soil carbon",
             x = "Difference",

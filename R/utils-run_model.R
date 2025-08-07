@@ -118,7 +118,7 @@ run_model_A <- function(df) {
   df_gamma <- read.csv("data-raw/files/df_gamma.csv")
 
   l_sigma <- get_co2climate_effect(
-    n_sim = 10000,
+    n_sim = 4000,
     start_year = 2004,
     end_year = 2012,
     this_scenario = "RCP8.5",
@@ -232,6 +232,7 @@ summarize_results_change <- function(results) {
 summarize_results_dist <- function(results) {
   df_grid <- results$df_grid
   a_post <- exp(results$a_post)
+  clim_eff <- results$clim_eff
 
   df_post <- as_draws_df(a_post)
 
@@ -258,7 +259,8 @@ summarize_results_dist <- function(results) {
   # return object for plotting
   data.frame(
     iter = 1:length(diff_dist),
-    value = diff_dist
+    value = diff_dist,
+    value_clim_eff = as.numeric(diff_dist)-as.numeric(clim_eff)
   )
 }
 
