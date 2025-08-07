@@ -131,7 +131,7 @@ run_model_A <- function(df) {
   )
 
   # return both bits
-  return(list(df_grid = df_grid, a_post = a_post, clim_eff=l_sigma))
+  return(list(df_grid = df_grid, a_post = a_post, clim_eff = l_sigma))
 }
 
 #' Summarize results in a very simple way
@@ -260,7 +260,7 @@ summarize_results_dist <- function(results) {
   data.frame(
     iter = 1:length(diff_dist),
     value = diff_dist,
-    value_clim_eff = as.numeric(diff_dist)-as.numeric(clim_eff)
+    value_clim_eff = as.numeric(diff_dist) - as.numeric(clim_eff)
   )
 }
 

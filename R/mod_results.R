@@ -128,7 +128,7 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = total-clim_eff_mn,
+              ymin = total - clim_eff_mn,
               ymax = total,
               fill = color_ribbon
             ),
@@ -218,8 +218,8 @@ mod_results_server <- function(id, rv, x) {
             color = "#37a635",
             size = 1.5
           ) +
-           ggplot2::geom_density(
-            ggplot2::aes(-1.0*value_clim_eff),
+          ggplot2::geom_density(
+            ggplot2::aes(-1.0 * value_clim_eff),
             color = "#F49633",
             size = 1.5
           ) +
