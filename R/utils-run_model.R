@@ -115,8 +115,23 @@ run_model_A <- function(df) {
   # this returns 3D array of posterior samples (iteration) x (chain) x (variable)
   a_post <- dummy_model(df, df_grid, n_post_samples, n_chains)
 
+  df_gamma <- read.csv("data-raw/files/df_gamma.csv")
+
+  l_sigma <- get_co2climate_effect(
+    n_sim = 10000,
+    start_year = 2004,
+    end_year = 2012,
+    this_scenario = "RCP8.5",
+    shape = df_gamma$shape,
+    rate = df_gamma$rate,
+    intercept = df_gamma$intercept,
+    slope = df_gamma$slope,
+    sigma = df_gamma$sigma,
+    maxbeta = df_gamma$maxbeta
+  )
+
   # return both bits
-  return(list(df_grid = df_grid, a_post = a_post))
+  return(list(df_grid = df_grid, a_post = a_post, clim_eff=l_sigma))
 }
 
 #' Summarize results in a very simple way
@@ -173,6 +188,7 @@ summarize_results_simple <- function(results, alpha = 0.05) {
 summarize_results_change <- function(results) {
   df_grid <- results$df_grid
   a_post <- exp(results$a_post)
+  clim_eff <- results$clim_eff
 
   df_post <- as_draws_df(a_post)
 
@@ -200,7 +216,9 @@ summarize_results_change <- function(results) {
   data.frame(
     time = dm$year,
     total = dm$x, # orange line
-    total_error = derr$x
+    total_error = derr$x,
+    clim_eff_mn = mean(clim_eff),
+    clim_eff_sd = sd(clim_eff)
   )
 }
 
@@ -337,9 +355,9 @@ get_co2climate_effect <- function(
   # force to be always negative
   v_gamma <- -1 * abs(intercept + slope * v_beta + rnorm(n_sim, 0, sigma))
   v_dc <- v_beta * dco2 + v_gamma * dta
-  v_S_c_end <- S_c_start + v_dc
+  #v_S_c_end <- S_c_start + v_dc
 
-  return(v_S_c_end)
+  return(v_dc)
 }
 
 #' run_model_B

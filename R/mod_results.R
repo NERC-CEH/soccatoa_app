@@ -106,19 +106,12 @@ mod_results_server <- function(id, rv, x) {
     output$result <- renderPlot({
       if (isTruthy(rv$l_results)) {
         # bind stats model and climate model results
-        data_2 <- cbind(
-          summarize_results_change(rv$l_results),
-          # this is just the example data
-          data.frame(
-            climate_effect = c(2, 3), # blue line (constant)
-            climate_error = c(0.3, 0.4) # Error for blue
-          )
-        )
+        data_2 <- summarize_results_change(rv$l_results)
 
         # Convert data to long format for easier legend handling
         data_long <- tidyr::pivot_longer(
           data_2,
-          cols = c(total, climate_effect),
+          cols = c(total, clim_eff_mn),
           names_to = "category",
           values_to = "value"
         )
@@ -135,7 +128,7 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = climate_effect,
+              ymin = total-clim_eff_mn,
               ymax = total,
               fill = color_ribbon
             ),
@@ -143,7 +136,7 @@ mod_results_server <- function(id, rv, x) {
             inherit.aes = FALSE
           ) +
 
-          # Climate effect line
+          ## Climate effect line
           ggplot2::geom_line(size = 1.5) +
 
           # Error bars
@@ -162,8 +155,8 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = climate_effect - climate_error,
-              ymax = climate_effect + climate_error,
+              ymin = clim_eff_mn - clim_eff_sd,
+              ymax = clim_eff_mn + clim_eff_sd,
               color = "climate effect"
             ),
             width = 0.2,
