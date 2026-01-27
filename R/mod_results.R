@@ -111,30 +111,16 @@ mod_results_server <- function(id, rv, x) {
         # Convert data to long format for easier legend handling
         data_long <- tidyr::pivot_longer(
           data_2,
-          cols = c(total, clim_eff_mn),
+          cols = c(dummyModel, climateEffect),
           names_to = "category",
           values_to = "value"
         )
-
-        data_2$color_ribbon <- "striped area"
 
         # Plot
         ggplot2::ggplot(
           data_long,
           ggplot2::aes(x = time, y = value, color = category, group = category)
         ) +
-          # Shaded area
-          ggplot2::geom_ribbon(
-            data = data_2,
-            ggplot2::aes(
-              x = time,
-              ymin = total - clim_eff_mn,
-              ymax = total,
-              fill = color_ribbon
-            ),
-            alpha = 0.5,
-            inherit.aes = FALSE
-          ) +
 
           ## Climate effect line
           ggplot2::geom_line(size = 1.5) +
@@ -144,9 +130,9 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = total - total_error,
-              ymax = total + total_error,
-              color = "total"
+              ymin = dummyModel - dummyModel_error,
+              ymax = dummyModel + dummyModel_error,
+              color = "dummyModel"
             ),
             width = 0.2,
             inherit.aes = FALSE
@@ -155,23 +141,20 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = clim_eff_mn - clim_eff_sd,
-              ymax = clim_eff_mn + clim_eff_sd,
-              color = "climate effect"
+              ymin = climateEffect - climateEffect_sd,
+              ymax = climateEffect + climateEffect_sd,
+              color = "climateEffect"
             ),
             width = 0.2,
             inherit.aes = FALSE
           ) +
           # Axis labels
-          ggplot2::labs(x = NULL, y = NULL, color = "Legend", fill = "Legend") + # Remove global x label
+          ggplot2::labs(x = NULL, y = expression("soil carbon (" * kgC ~ m^-2 * ")"), color = "Legend", fill = "Legend") + # Remove global x label
           ggplot2::scale_color_manual(
-            values = c("total" = "#0483A4", "climate effect" = "#F49633")
+            values = c("dummyModel" = "#0483A4", "climateEffect" = "#F49633")
           ) +
-          ggplot2::scale_fill_manual(
-            name = "Result",
-            values = c("striped area" = "#37a635")
-          ) + # Updated fill mapping
 
+          ggplot2::theme_minimal() +
           ggplot2::theme(
             legend.background = ggplot2::element_blank(),
             legend.box.background = ggplot2::element_blank(),
@@ -179,7 +162,7 @@ mod_results_server <- function(id, rv, x) {
               fill = "transparent",
               color = NA
             ),
-            legend.text = ggplot2::element_text(size = 14),
+            legend.text = ggplot2::element_text(size = 10),
             panel.background = ggplot2::element_blank(),
             panel.border = ggplot2::element_rect(
               color = "#EAEFEC",
@@ -192,14 +175,13 @@ mod_results_server <- function(id, rv, x) {
               face = "bold",
               hjust = 0.5
             ),
-            axis.title.x = ggplot2::element_text(size = 16),
-            axis.title.y = ggplot2::element_text(size = 16),
+            axis.title.x = ggplot2::element_text(size = 14),
+            axis.title.y = ggplot2::element_text(size = 14),
             axis.text = ggplot2::element_text(size = 14)
           ) +
-          ggplot2::theme_minimal() +
           ggplot2::theme(
-            axis.title.y = ggplot2::element_blank(),
-            axis.text.y = ggplot2::element_blank(),
+            #axis.title.y = ggplot2::element_blank(),
+            axis.text.y = ggplot2::element_text(size = 12),
             axis.text.x = ggplot2::element_text(size = 12) # Ensure x-axis labels are visible
           )
       } else {
@@ -215,11 +197,11 @@ mod_results_server <- function(id, rv, x) {
         ggplot2::ggplot(uncertainty_df) +
           ggplot2::geom_density(
             ggplot2::aes(value),
-            color = "#37a635",
+            color = "#0483A4",
             size = 1.5
           ) +
           ggplot2::geom_density(
-            ggplot2::aes(-1.0 * value_clim_eff),
+            ggplot2::aes(value_clim_eff),
             color = "#F49633",
             size = 1.5
           ) +

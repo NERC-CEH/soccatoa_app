@@ -119,7 +119,7 @@ run_model_A <- function(df) {
   df_gamma <- read.csv("data-raw/files/df_gamma.csv")
 
   l_sigma <- get_co2climate_effect(
-    n_sim = 4000,
+    n_sim = n_post_samples*n_chains,
     start_year = 2004,
     end_year = 2012,
     this_scenario = "RCP8.5",
@@ -214,13 +214,16 @@ summarize_results_change <- function(results) {
   derr <- aggregate(df_post$x, list(year = df_post$year), sd)
 
   # return object for plotting
-  data.frame(
+  df <- data.frame(
     time = dm$year,
-    total = dm$x, # orange line
-    total_error = derr$x,
-    clim_eff_mn = mean(clim_eff),
-    clim_eff_sd = sd(clim_eff)
+    dummyModel = dm$x, # orange line
+    dummyModel_error = derr$x,
+    climateEffect = mean(clim_eff),
+    climateEffect_sd = sd(clim_eff)
   )
+  df$climateEffect[1] = df$dummyModel[1]
+  df$climateEffect[2] = df$dummyModel[1]+df$climateEffect[2]
+  return(df)
 }
 
 #' Summarize results for uncertainty plot
@@ -261,7 +264,7 @@ summarize_results_dist <- function(results) {
   data.frame(
     iter = 1:length(diff_dist),
     value = diff_dist,
-    value_clim_eff = as.numeric(diff_dist) - as.numeric(clim_eff)
+    value_clim_eff = clim_eff
   )
 }
 
