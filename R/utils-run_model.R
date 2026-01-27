@@ -77,7 +77,8 @@ make_prediction_grid <- function(df) {
   # these need to be revisited depending on how we change the grid
   df_grid$d <- 0.3
   df_grid$area <- ((max(df$easting) - min(df$easting)) / n_east) *
-    (max(df$northing) - min(df$northing) / n_north)
+    (max(df$northing) - min(df$northing)) /
+    n_north
   # need to think about whether this is fixed or if
   # marginalize?
   # S_fez=mean(df_fix$S_fez))
