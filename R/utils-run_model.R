@@ -119,7 +119,7 @@ run_model_A <- function(df) {
   df_gamma <- read.csv("data-raw/files/df_gamma.csv")
 
   l_sigma <- get_co2climate_effect(
-    n_sim = n_post_samples*n_chains,
+    n_sim = n_post_samples * n_chains,
     start_year = 2004,
     end_year = 2012,
     this_scenario = "RCP8.5",
