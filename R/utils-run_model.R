@@ -222,7 +222,7 @@ summarize_results_change <- function(results) {
     climateEffect_sd = sd(clim_eff)
   )
   df$climateEffect[1] = df$dummyModel[1]
-  df$climateEffect[2] = df$dummyModel[1]+df$climateEffect[2]
+  df$climateEffect[2] = df$dummyModel[1] + df$climateEffect[2]
   return(df)
 }
 
