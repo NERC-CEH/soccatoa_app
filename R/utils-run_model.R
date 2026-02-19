@@ -218,7 +218,7 @@ summarize_results_change <- function(results) {
   field_startyr_mn <- mean(field_startyr)
   field_startyr_sd <- sd(field_startyr)
 
-  field_endyr   <- df_post$x[df_post$year == 2012]
+  field_endyr <- df_post$x[df_post$year == 2012]
   field_endyr_mn <- mean(field_endyr)
   field_endyr_sd <- sd(field_endyr)
 
