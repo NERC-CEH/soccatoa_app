@@ -233,10 +233,10 @@ summarize_results_change <- function(results) {
     dummyModel_error = derr$x,
     climateEffect = mean(clim_eff),
     climateEffect_sd = sd(clim_eff),
-    dummyModel_mn = c(field_startyr_mn,field_endyr_mn),
-    dummyModel_sd = c(field_startyr_sd,field_endyr_sd),
-    dummy_minus_climeff_mn = c(field_startyr_mn,adj_endyr_mn),
-    dummy_minus_climeff_sd = c(field_startyr_sd,adj_endyr_sd)
+    dummyModel_mn = c(field_startyr_mn, field_endyr_mn),
+    dummyModel_sd = c(field_startyr_sd, field_endyr_sd),
+    dummy_minus_climeff_mn = c(field_startyr_mn, adj_endyr_mn),
+    dummy_minus_climeff_sd = c(field_startyr_sd, adj_endyr_sd)
   )
   df$climateEffect[1] = df$dummyModel[1]
   df$climateEffect[2] = df$dummyModel[1] + df$climateEffect[2]
