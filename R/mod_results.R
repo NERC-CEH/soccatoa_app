@@ -64,7 +64,7 @@ mod_results_ui <- function(id) {
               "Graph",
               plotOutput(ns("result"))
             ),
-             bslib::nav_panel(
+            bslib::nav_panel(
               "Graph detailed",
               plotOutput(ns("result_detailed"))
             ),
