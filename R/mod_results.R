@@ -164,7 +164,10 @@ mod_results_server <- function(id, rv, x) {
             fill = "Legend"
           ) + # Remove global x label
           ggplot2::scale_color_manual(
-            values = c("dummyModel_mn" = "#0483A4", "dummy_minus_climeff_mn" = "#F49633")
+            values = c(
+              "dummyModel_mn" = "#0483A4",
+              "dummy_minus_climeff_mn" = "#F49633"
+            )
           ) +
 
           ggplot2::theme_minimal() +
