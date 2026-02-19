@@ -90,7 +90,7 @@ mod_results_ui <- function(id) {
               "Uncertainty Graph detailed",
               plotOutput(ns("uncertainty_graph_detailed"))
             ),
-             bslib::nav_panel(
+            bslib::nav_panel(
               "Map",
               id = "map",
               leaflet::leafletOutput(ns("map_result"), height = "100%")
