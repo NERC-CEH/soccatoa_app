@@ -118,7 +118,7 @@ mod_results_server <- function(id, rv, x) {
 
         # Convert data to long format for easier legend handling
         data_long <- tidyr::pivot_longer(
-          data_2[, c(1,6:9)],
+          data_2[, c(1, 6:9)],
           cols = c(dummyModel_mn, dummy_minus_climeff_mn),
           names_to = "category",
           values_to = "value"
