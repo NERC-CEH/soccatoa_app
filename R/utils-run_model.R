@@ -213,13 +213,30 @@ summarize_results_change <- function(results) {
   dm <- aggregate(df_post$x, list(year = df_post$year), median)
   derr <- aggregate(df_post$x, list(year = df_post$year), sd)
 
+  # separate out start and end year
+  field_startyr <- df_post$x[df_post$year == 2004]
+  field_startyr_mn <- mean(field_startyr)
+  field_startyr_sd <- sd(field_startyr)
+
+  field_endyr   <- df_post$x[df_post$year == 2012]
+  field_endyr_mn <- mean(field_endyr)
+  field_endyr_sd <- sd(field_endyr)
+
+  adj_endyr <- field_endyr - clim_eff
+  adj_endyr_mn <- mean(adj_endyr)
+  adj_endyr_sd <- sd(adj_endyr)
+
   # return object for plotting
   df <- data.frame(
     time = dm$year,
     dummyModel = dm$x, # orange line
     dummyModel_error = derr$x,
     climateEffect = mean(clim_eff),
-    climateEffect_sd = sd(clim_eff)
+    climateEffect_sd = sd(clim_eff),
+    dummyModel_mn = c(field_startyr_mn,field_endyr_mn),
+    dummyModel_sd = c(field_startyr_sd,field_endyr_sd),
+    dummy_minus_climeff_mn = c(field_startyr_mn,adj_endyr_mn),
+    dummy_minus_climeff_sd = c(field_startyr_sd,adj_endyr_sd)
   )
   df$climateEffect[1] = df$dummyModel[1]
   df$climateEffect[2] = df$dummyModel[1]+df$climateEffect[2]
@@ -264,7 +281,8 @@ summarize_results_dist <- function(results) {
   data.frame(
     iter = 1:length(diff_dist),
     value = diff_dist,
-    value_clim_eff = clim_eff
+    value_clim_eff = clim_eff,
+    value_dum_climeff = as.numeric(diff_dist) - as.numeric(clim_eff)
   )
 }
 
