@@ -243,7 +243,12 @@ mod_results_server <- function(id, rv, x) {
             inherit.aes = FALSE
           ) +
           # Axis labels
-          ggplot2::labs(x = NULL, y = expression("soil carbon (" * kgC ~ m^-2 * ")"), color = "Legend", fill = "Legend") + # Remove global x label
+          ggplot2::labs(
+            x = NULL,
+            y = expression("soil carbon (" * kgC ~ m^-2 * ")"),
+            color = "Legend",
+            fill = "Legend"
+          ) + # Remove global x label
           ggplot2::scale_color_manual(
             values = c("dummyModel" = "#0483A4", "climateEffect" = "#F49633")
           ) +
