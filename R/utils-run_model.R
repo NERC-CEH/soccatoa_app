@@ -378,7 +378,7 @@ get_co2climate_effect <- function(
 
   # force to be always negative
   v_gamma <- -1 * abs(intercept + slope * v_beta + rnorm(n_sim, 0, sigma))
-  v_dc <- v_beta * dco2 + v_gamma * dta
+  v_dc <- v_beta * dco2 + v_gamma * S_c_start * dta
   #v_S_c_end <- S_c_start + v_dc
 
   return(v_dc)
