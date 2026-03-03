@@ -115,11 +115,19 @@ mod_results_server <- function(id, rv, x) {
       if (isTruthy(rv$l_results)) {
         # bind stats model and climate model results
         data_2 <- summarize_results_change(rv$l_results)
+        data_2 <- dplyr::select(
+          data_2,
+          time,
+          stats_model_mn,
+          stats_model_sd,
+          stats_model_minus_climeff_mn,
+          stats_model_minus_climeff_sd
+        )
 
         # Convert data to long format for easier legend handling
         data_long <- tidyr::pivot_longer(
-          data_2[, c(1, 6:9)],
-          cols = c(dummyModel_mn, dummy_minus_climeff_mn),
+          data_2,
+          cols = c(stats_model_mn, stats_model_minus_climeff_mn),
           names_to = "category",
           values_to = "value"
         )
@@ -138,9 +146,9 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = dummyModel_mn - dummyModel_sd,
-              ymax = dummyModel_mn + dummyModel_sd,
-              color = "dummyModel_mn"
+              ymin = stats_model_mn - stats_model_sd,
+              ymax = stats_model_mn + stats_model_sd,
+              color = "stats_model_mn"
             ),
             width = 0.2,
             inherit.aes = FALSE
@@ -149,9 +157,11 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = dummy_minus_climeff_mn - dummy_minus_climeff_sd,
-              ymax = dummy_minus_climeff_mn + dummy_minus_climeff_sd,
-              color = "dummy_minus_climeff_mn"
+              ymin = stats_model_minus_climeff_mn -
+                stats_model_minus_climeff_sd,
+              ymax = stats_model_minus_climeff_mn +
+                stats_model_minus_climeff_sd,
+              color = "stats_model_minus_climeff_mn"
             ),
             width = 0.2,
             inherit.aes = FALSE
@@ -165,8 +175,8 @@ mod_results_server <- function(id, rv, x) {
           ) + # Remove global x label
           ggplot2::scale_color_manual(
             values = c(
-              "dummyModel_mn" = "#0483A4",
-              "dummy_minus_climeff_mn" = "#F49633"
+              "stats_model_mn" = "#0483A4",
+              "stats_model_minus_climeff_mn" = "#F49633"
             )
           ) +
 
@@ -209,11 +219,19 @@ mod_results_server <- function(id, rv, x) {
       if (isTruthy(rv$l_results)) {
         # bind stats model and climate model results
         data_2 <- summarize_results_change(rv$l_results)
+        data_2 <- dplyr::select(
+          data_2,
+          time,
+          stats_model,
+          stats_model_error,
+          climate_effect,
+          climate_effect_sd
+        )
 
         # Convert data to long format for easier legend handling
         data_long <- tidyr::pivot_longer(
-          data_2[, c(1, 2:5)],
-          cols = c(dummyModel, climateEffect),
+          data_2,
+          cols = c(stats_model, climate_effect),
           names_to = "category",
           values_to = "value"
         )
@@ -232,9 +250,9 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = dummyModel - dummyModel_error,
-              ymax = dummyModel + dummyModel_error,
-              color = "dummyModel"
+              ymin = stats_model - stats_model_error,
+              ymax = stats_model + stats_model_error,
+              color = "stats_model"
             ),
             width = 0.2,
             inherit.aes = FALSE
@@ -243,9 +261,9 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = climateEffect - climateEffect_sd,
-              ymax = climateEffect + climateEffect_sd,
-              color = "climateEffect"
+              ymin = climate_effect - climate_effect_sd,
+              ymax = climate_effect + climate_effect_sd,
+              color = "climate_effect"
             ),
             width = 0.2,
             inherit.aes = FALSE
@@ -258,7 +276,7 @@ mod_results_server <- function(id, rv, x) {
             fill = "Legend"
           ) + # Remove global x label
           ggplot2::scale_color_manual(
-            values = c("dummyModel" = "#0483A4", "climateEffect" = "#F49633")
+            values = c("stats_model" = "#0483A4", "climate_effect" = "#F49633")
           ) +
 
           ggplot2::theme_minimal() +

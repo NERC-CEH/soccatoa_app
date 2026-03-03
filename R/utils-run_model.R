@@ -92,7 +92,7 @@ make_prediction_grid <- function(df) {
 #' @param df a `data.frame` of data loaded
 #' @return df_results
 #' @export
-run_model_A <- function(df) {
+run_model_A <- function(df, start_year, end_year) {
   # get carbon density and factor year
   df <- df %>%
     dplyr::mutate(rho_c = f_c * rho_fe) %>%
@@ -118,10 +118,10 @@ run_model_A <- function(df) {
 
   df_gamma <- read.csv("data-raw/files/df_gamma.csv")
 
-  l_sigma <- get_co2climate_effect(
+  v_dc_clim <- get_co2climate_effect(
     n_sim = n_post_samples * n_chains,
-    start_year = 2004,
-    end_year = 2012,
+    start_year = start_year,
+    end_year = end_year,
     this_scenario = "RCP8.5",
     shape = df_gamma$shape,
     rate = df_gamma$rate,
@@ -132,7 +132,7 @@ run_model_A <- function(df) {
   )
 
   # return both bits
-  return(list(df_grid = df_grid, a_post = a_post, clim_eff = l_sigma))
+  return(list(df_grid = df_grid, a_post = a_post, clim_eff = v_dc_clim))
 }
 
 #' Summarize results in a very simple way
@@ -213,33 +213,42 @@ summarize_results_change <- function(results) {
   dm <- aggregate(df_post$x, list(year = df_post$year), median)
   derr <- aggregate(df_post$x, list(year = df_post$year), sd)
 
+  df_post$year <- as.numeric(as.character(df_post$year))
+  start_val <- min(df_post$year)
+  end_val <- max(df_post$year)
   # separate out start and end year
-  field_startyr <- df_post$x[df_post$year == 2004]
-  field_startyr_mn <- mean(field_startyr)
-  field_startyr_sd <- sd(field_startyr)
+  stats_model_startyr <- df_post$x[df_post$year == start_val]
+  stats_model_startyr_mn <- mean(stats_model_startyr)
+  stats_model_startyr_sd <- sd(stats_model_startyr)
 
-  field_endyr <- df_post$x[df_post$year == 2012]
-  field_endyr_mn <- mean(field_endyr)
-  field_endyr_sd <- sd(field_endyr)
+  stats_model_endyr <- df_post$x[df_post$year == end_val]
+  stats_model_endyr_mn <- mean(stats_model_endyr)
+  stats_model_endyr_sd <- sd(stats_model_endyr)
 
-  adj_endyr <- field_endyr - clim_eff
-  adj_endyr_mn <- mean(adj_endyr)
-  adj_endyr_sd <- sd(adj_endyr)
+  adjusted_model_endyr <- stats_model_endyr - clim_eff
+  adjusted_model_endyr_mn <- mean(adjusted_model_endyr)
+  adjusted_model_endyr_sd <- sd(adjusted_model_endyr)
 
   # return object for plotting
   df <- data.frame(
     time = dm$year,
-    dummyModel = dm$x, # orange line
-    dummyModel_error = derr$x,
-    climateEffect = mean(clim_eff),
-    climateEffect_sd = sd(clim_eff),
-    dummyModel_mn = c(field_startyr_mn, field_endyr_mn),
-    dummyModel_sd = c(field_startyr_sd, field_endyr_sd),
-    dummy_minus_climeff_mn = c(field_startyr_mn, adj_endyr_mn),
-    dummy_minus_climeff_sd = c(field_startyr_sd, adj_endyr_sd)
+    stats_model = dm$x, # orange line
+    stats_model_error = derr$x,
+    climate_effect = mean(clim_eff),
+    climate_effect_sd = sd(clim_eff),
+    stats_model_mn = c(stats_model_startyr_mn, stats_model_endyr_mn),
+    stats_model_sd = c(stats_model_startyr_sd, stats_model_endyr_sd),
+    stats_model_minus_climeff_mn = c(
+      stats_model_startyr_mn,
+      adjusted_model_endyr_mn
+    ),
+    stats_model_minus_climeff_sd = c(
+      stats_model_startyr_sd,
+      adjusted_model_endyr_sd
+    )
   )
-  df$climateEffect[1] = df$dummyModel[1]
-  df$climateEffect[2] = df$dummyModel[1] + df$climateEffect[2]
+  df$climate_effect[1] = df$stats_model[1]
+  df$climate_effect[2] = df$stats_model[1] + df$climate_effect[2]
   return(df)
 }
 
@@ -379,7 +388,6 @@ get_co2climate_effect <- function(
   # force to be always negative
   v_gamma <- -1 * abs(intercept + slope * v_beta + rnorm(n_sim, 0, sigma))
   v_dc <- v_beta * dco2 + v_gamma * S_c_start * dta
-  #v_S_c_end <- S_c_start + v_dc
 
   return(v_dc)
 }

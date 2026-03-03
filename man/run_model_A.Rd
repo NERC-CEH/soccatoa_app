@@ -4,7 +4,7 @@
 \alias{run_model_A}
 \title{Spatio-temporal model of soil carbon}
 \usage{
-run_model_A(df)
+run_model_A(df, start_year, end_year)
 }
 \arguments{
 \item{df}{a `data.frame` of data loaded}
