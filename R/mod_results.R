@@ -177,6 +177,10 @@ mod_results_server <- function(id, rv, x) {
             values = c(
               "stats_model_mn" = "#0483A4",
               "stats_model_minus_climeff_mn" = "#F49633"
+            ),
+            labels = c(
+              "stats_model_mn" = "soil carbon estimate",
+              "stats_model_minus_climeff_mn" = "soil carbon estimate minus climate effect"
             )
           ) +
 
@@ -276,7 +280,11 @@ mod_results_server <- function(id, rv, x) {
             fill = "Legend"
           ) + # Remove global x label
           ggplot2::scale_color_manual(
-            values = c("stats_model" = "#0483A4", "climate_effect" = "#F49633")
+            values = c("stats_model" = "#0483A4", "climate_effect" = "#F49633"),
+            labels = c(
+              "stats_model" = "soil carbon estimate",
+              "climate_effect" = "climate effect"
+            )
           ) +
 
           ggplot2::theme_minimal() +
