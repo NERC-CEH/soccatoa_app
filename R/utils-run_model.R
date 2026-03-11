@@ -132,7 +132,7 @@ run_model_A <- function(df, start_year, end_year) {
   )
 
   # return both bits
-  return(list(df_grid = df_grid, a_post = a_post, clim_eff = v_dc_clim))
+  return(list(df_grid = df_grid, a_post = a_post, v_dc_clim = v_dc_clim))
 }
 
 #' Summarize results in a very simple way
@@ -189,7 +189,7 @@ summarize_results_simple <- function(results, alpha = 0.05) {
 summarize_results_change <- function(results) {
   df_grid <- results$df_grid
   a_post <- exp(results$a_post)
-  clim_eff <- results$clim_eff
+  v_dc_clim <- results$v_dc_clim
 
   df_post <- as_draws_df(a_post)
 
@@ -217,38 +217,38 @@ summarize_results_change <- function(results) {
   start_val <- min(df_post$year)
   end_val <- max(df_post$year)
   # separate out start and end year
-  stats_model_startyr <- df_post$x[df_post$year == start_val]
-  stats_model_startyr_mn <- mean(stats_model_startyr)
-  stats_model_startyr_sd <- sd(stats_model_startyr)
+  v_S_c_pred_t0 <- df_post$x[df_post$year == start_val]
+  S_c_pred_t0_mn <- mean(v_S_c_pred_t0)
+  S_c_pred_t0_sd <- sd(v_S_c_pred_t0)
 
-  stats_model_endyr <- df_post$x[df_post$year == end_val]
-  stats_model_endyr_mn <- mean(stats_model_endyr)
-  stats_model_endyr_sd <- sd(stats_model_endyr)
+  v_S_c_pred_tn <- df_post$x[df_post$year == end_val]
+  S_c_pred_tn_mn <- mean(v_S_c_pred_tn)
+  S_c_pred_tn_sd <- sd(v_S_c_pred_tn)
 
-  adjusted_model_endyr <- stats_model_endyr - clim_eff
-  adjusted_model_endyr_mn <- mean(adjusted_model_endyr)
-  adjusted_model_endyr_sd <- sd(adjusted_model_endyr)
+  v_dS_c_mgmt_tn <- v_S_c_pred_tn - v_dc_clim
+  dS_c_mgmt_tn_mn <- mean(v_dS_c_mgmt_tn)
+  dS_c_mgmt_tn_sd <- sd(v_dS_c_mgmt_tn)
 
   # return object for plotting
   df <- data.frame(
     time = dm$year,
-    stats_model = dm$x, # orange line
-    stats_model_error = derr$x,
-    climate_effect = mean(clim_eff),
-    climate_effect_sd = sd(clim_eff),
-    stats_model_mn = c(stats_model_startyr_mn, stats_model_endyr_mn),
-    stats_model_sd = c(stats_model_startyr_sd, stats_model_endyr_sd),
-    stats_model_minus_climeff_mn = c(
-      stats_model_startyr_mn,
-      adjusted_model_endyr_mn
+    v_S_c_pred = dm$x, # orange line
+    v_S_c_pred_error = derr$x,
+    v_dc_clim_mn = mean(v_dc_clim),
+    v_dc_clim_sd = sd(v_dc_clim),
+    v_S_c_pred_mn = c(S_c_pred_t0_mn, S_c_pred_tn_mn),
+    v_S_c_pred_sd = c(S_c_pred_t0_sd, S_c_pred_tn_sd),
+    v_dS_c_mgmt_mn = c(
+      S_c_pred_t0_mn,
+      dS_c_mgmt_tn_mn
     ),
-    stats_model_minus_climeff_sd = c(
-      stats_model_startyr_sd,
-      adjusted_model_endyr_sd
+    v_dS_c_mgmt_sd = c(
+      S_c_pred_t0_sd,
+      dS_c_mgmt_tn_sd
     )
   )
-  df$climate_effect[1] = df$stats_model[1]
-  df$climate_effect[2] = df$stats_model[1] + df$climate_effect[2]
+  df$v_dc_clim_mn[1] = df$v_S_c_pred[1]
+  df$v_dc_clim_mn[2] = df$v_S_c_pred[1] + df$v_dc_clim_mn[2]
   return(df)
 }
 
@@ -262,7 +262,7 @@ summarize_results_change <- function(results) {
 summarize_results_dist <- function(results) {
   df_grid <- results$df_grid
   a_post <- exp(results$a_post)
-  clim_eff <- results$clim_eff
+  v_dc_clim <- results$v_dc_clim
 
   df_post <- as_draws_df(a_post)
 
@@ -290,8 +290,8 @@ summarize_results_dist <- function(results) {
   data.frame(
     iter = 1:length(diff_dist),
     value = diff_dist,
-    value_clim_eff = clim_eff,
-    value_dum_climeff = as.numeric(diff_dist) - as.numeric(clim_eff)
+    v_dc_clim = v_dc_clim,
+    v_dS_c_mgmt_dist = as.numeric(diff_dist) - as.numeric(v_dc_clim)
   )
 }
 

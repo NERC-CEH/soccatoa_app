@@ -118,16 +118,16 @@ mod_results_server <- function(id, rv, x) {
         data_2 <- dplyr::select(
           data_2,
           time,
-          stats_model_mn,
-          stats_model_sd,
-          stats_model_minus_climeff_mn,
-          stats_model_minus_climeff_sd
+          v_S_c_pred_mn,
+          v_S_c_pred_sd,
+          v_dS_c_mgmt_mn,
+          v_dS_c_mgmt_sd
         )
 
         # Convert data to long format for easier legend handling
         data_long <- tidyr::pivot_longer(
           data_2,
-          cols = c(stats_model_mn, stats_model_minus_climeff_mn),
+          cols = c(v_S_c_pred_mn, v_dS_c_mgmt_mn),
           names_to = "category",
           values_to = "value"
         )
@@ -146,9 +146,9 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = stats_model_mn - stats_model_sd,
-              ymax = stats_model_mn + stats_model_sd,
-              color = "stats_model_mn"
+              ymin = v_S_c_pred_mn - v_S_c_pred_sd,
+              ymax = v_S_c_pred_mn + v_S_c_pred_sd,
+              color = "v_S_c_pred_mn"
             ),
             width = 0.2,
             inherit.aes = FALSE
@@ -157,11 +157,11 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = stats_model_minus_climeff_mn -
-                stats_model_minus_climeff_sd,
-              ymax = stats_model_minus_climeff_mn +
-                stats_model_minus_climeff_sd,
-              color = "stats_model_minus_climeff_mn"
+              ymin = v_dS_c_mgmt_mn -
+                v_dS_c_mgmt_sd,
+              ymax = v_dS_c_mgmt_mn +
+                v_dS_c_mgmt_sd,
+              color = "v_dS_c_mgmt_mn"
             ),
             width = 0.2,
             inherit.aes = FALSE
@@ -175,12 +175,12 @@ mod_results_server <- function(id, rv, x) {
           ) + # Remove global x label
           ggplot2::scale_color_manual(
             values = c(
-              "stats_model_mn" = "#0483A4",
-              "stats_model_minus_climeff_mn" = "#F49633"
+              "v_S_c_pred_mn" = "#0483A4",
+              "v_dS_c_mgmt_mn" = "#F49633"
             ),
             labels = c(
-              "stats_model_mn" = "soil carbon estimate",
-              "stats_model_minus_climeff_mn" = "soil carbon estimate minus climate effect"
+              "v_S_c_pred_mn" = "soil carbon estimate",
+              "v_dS_c_mgmt_mn" = "soil carbon estimate minus climate effect"
             )
           ) +
 
@@ -226,16 +226,16 @@ mod_results_server <- function(id, rv, x) {
         data_2 <- dplyr::select(
           data_2,
           time,
-          stats_model,
-          stats_model_error,
-          climate_effect,
-          climate_effect_sd
+          v_S_c_pred,
+          v_S_c_pred_error,
+          v_dc_clim_mn,
+          v_dc_clim_sd
         )
 
         # Convert data to long format for easier legend handling
         data_long <- tidyr::pivot_longer(
           data_2,
-          cols = c(stats_model, climate_effect),
+          cols = c(v_S_c_pred, v_dc_clim_mn),
           names_to = "category",
           values_to = "value"
         )
@@ -254,9 +254,9 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = stats_model - stats_model_error,
-              ymax = stats_model + stats_model_error,
-              color = "stats_model"
+              ymin = v_S_c_pred - v_S_c_pred_error,
+              ymax = v_S_c_pred + v_S_c_pred_error,
+              color = "v_S_c_pred"
             ),
             width = 0.2,
             inherit.aes = FALSE
@@ -265,9 +265,9 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = climate_effect - climate_effect_sd,
-              ymax = climate_effect + climate_effect_sd,
-              color = "climate_effect"
+              ymin = v_dc_clim_mn - v_dc_clim_sd,
+              ymax = v_dc_clim_mn + v_dc_clim_sd,
+              color = "v_dc_clim_mn"
             ),
             width = 0.2,
             inherit.aes = FALSE
@@ -280,10 +280,10 @@ mod_results_server <- function(id, rv, x) {
             fill = "Legend"
           ) + # Remove global x label
           ggplot2::scale_color_manual(
-            values = c("stats_model" = "#0483A4", "climate_effect" = "#F49633"),
+            values = c("v_S_c_pred" = "#0483A4", "v_dc_clim_mn" = "#F49633"),
             labels = c(
-              "stats_model" = "soil carbon estimate",
-              "climate_effect" = "climate effect"
+              "v_S_c_pred" = "soil carbon estimate",
+              "v_dc_clim_mn" = "climate effect"
             )
           ) +
 
@@ -334,7 +334,7 @@ mod_results_server <- function(id, rv, x) {
             size = 1.5
           ) +
           ggplot2::geom_density(
-            ggplot2::aes(value_dum_climeff),
+            ggplot2::aes(v_dS_c_mgmt_dist),
             color = "#F49633",
             size = 1.5
           ) +
@@ -376,7 +376,7 @@ mod_results_server <- function(id, rv, x) {
             size = 1.5
           ) +
           ggplot2::geom_density(
-            ggplot2::aes(value_clim_eff),
+            ggplot2::aes(v_dc_clim),
             color = "#F49633",
             size = 1.5
           ) +
