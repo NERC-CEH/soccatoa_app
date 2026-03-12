@@ -92,7 +92,7 @@ make_prediction_grid <- function(df) {
 #' @param df a `data.frame` of data loaded
 #' @return df_results
 #' @export
-run_model_A <- function(df) {
+run_model_A <- function(df, start_year, end_year) {
   # get carbon density and factor year
   df <- df %>%
     dplyr::mutate(rho_c = f_c * rho_fe) %>%
@@ -116,8 +116,23 @@ run_model_A <- function(df) {
   # this returns 3D array of posterior samples (iteration) x (chain) x (variable)
   a_post <- dummy_model(df, df_grid, n_post_samples, n_chains)
 
+  df_gamma <- read.csv("data-raw/files/df_gamma.csv")
+
+  v_dc_clim <- get_co2climate_effect(
+    n_sim = n_post_samples * n_chains,
+    start_year = start_year,
+    end_year = end_year,
+    this_scenario = "RCP8.5",
+    shape = df_gamma$shape,
+    rate = df_gamma$rate,
+    intercept = df_gamma$intercept,
+    slope = df_gamma$slope,
+    sigma = df_gamma$sigma,
+    maxbeta = df_gamma$maxbeta
+  )
+
   # return both bits
-  return(list(df_grid = df_grid, a_post = a_post))
+  return(list(df_grid = df_grid, a_post = a_post, v_dc_clim = v_dc_clim))
 }
 
 #' Summarize results in a very simple way
@@ -174,6 +189,7 @@ summarize_results_simple <- function(results, alpha = 0.05) {
 summarize_results_change <- function(results) {
   df_grid <- results$df_grid
   a_post <- exp(results$a_post)
+  v_dc_clim <- results$v_dc_clim
 
   df_post <- as_draws_df(a_post)
 
@@ -197,12 +213,43 @@ summarize_results_change <- function(results) {
   dm <- aggregate(df_post$x, list(year = df_post$year), median)
   derr <- aggregate(df_post$x, list(year = df_post$year), sd)
 
+  df_post$year <- as.numeric(as.character(df_post$year))
+  start_val <- min(df_post$year)
+  end_val <- max(df_post$year)
+  # separate out start and end year
+  v_S_c_pred_t0 <- df_post$x[df_post$year == start_val]
+  S_c_pred_t0_mn <- mean(v_S_c_pred_t0)
+  S_c_pred_t0_sd <- sd(v_S_c_pred_t0)
+
+  v_S_c_pred_tn <- df_post$x[df_post$year == end_val]
+  S_c_pred_tn_mn <- mean(v_S_c_pred_tn)
+  S_c_pred_tn_sd <- sd(v_S_c_pred_tn)
+
+  v_dS_c_mgmt_tn <- v_S_c_pred_tn - v_dc_clim
+  dS_c_mgmt_tn_mn <- mean(v_dS_c_mgmt_tn)
+  dS_c_mgmt_tn_sd <- sd(v_dS_c_mgmt_tn)
+
   # return object for plotting
-  data.frame(
+  df <- data.frame(
     time = dm$year,
-    total = dm$x, # orange line
-    total_error = derr$x
+    v_S_c_pred = dm$x, # orange line
+    v_S_c_pred_error = derr$x,
+    v_dc_clim_mn = mean(v_dc_clim),
+    v_dc_clim_sd = sd(v_dc_clim),
+    v_S_c_pred_mn = c(S_c_pred_t0_mn, S_c_pred_tn_mn),
+    v_S_c_pred_sd = c(S_c_pred_t0_sd, S_c_pred_tn_sd),
+    v_dS_c_mgmt_mn = c(
+      S_c_pred_t0_mn,
+      dS_c_mgmt_tn_mn
+    ),
+    v_dS_c_mgmt_sd = c(
+      S_c_pred_t0_sd,
+      dS_c_mgmt_tn_sd
+    )
   )
+  df$v_dc_clim_mn[1] = df$v_S_c_pred[1]
+  df$v_dc_clim_mn[2] = df$v_S_c_pred[1] + df$v_dc_clim_mn[2]
+  return(df)
 }
 
 #' Summarize results for uncertainty plot
@@ -215,6 +262,7 @@ summarize_results_change <- function(results) {
 summarize_results_dist <- function(results) {
   df_grid <- results$df_grid
   a_post <- exp(results$a_post)
+  v_dc_clim <- results$v_dc_clim
 
   df_post <- as_draws_df(a_post)
 
@@ -241,7 +289,9 @@ summarize_results_dist <- function(results) {
   # return object for plotting
   data.frame(
     iter = 1:length(diff_dist),
-    value = diff_dist
+    value = diff_dist,
+    v_dc_clim = v_dc_clim,
+    v_dS_c_mgmt_dist = as.numeric(diff_dist) - as.numeric(v_dc_clim)
   )
 }
 
@@ -337,10 +387,9 @@ get_co2climate_effect <- function(
 
   # force to be always negative
   v_gamma <- -1 * abs(intercept + slope * v_beta + rnorm(n_sim, 0, sigma))
-  v_dc <- v_beta * dco2 + v_gamma * dta
-  v_S_c_end <- S_c_start + v_dc
+  v_dc <- v_beta * dco2 + v_gamma * S_c_start * dta
 
-  return(v_S_c_end)
+  return(v_dc)
 }
 
 #' run_model_B

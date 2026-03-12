@@ -65,6 +65,10 @@ mod_results_ui <- function(id) {
               plotOutput(ns("result"))
             ),
             bslib::nav_panel(
+              "Graph detailed",
+              plotOutput(ns("result_detailed"))
+            ),
+            bslib::nav_panel(
               "Guide",
               shiny::img(
                 src = "www/example_guide.png",
@@ -81,6 +85,10 @@ mod_results_ui <- function(id) {
             bslib::nav_panel(
               "Uncertainty Graph",
               plotOutput(ns("uncertainty_graph"))
+            ),
+            bslib::nav_panel(
+              "Uncertainty Graph detailed",
+              plotOutput(ns("uncertainty_graph_detailed"))
             ),
             bslib::nav_panel(
               "Map",
@@ -106,44 +114,31 @@ mod_results_server <- function(id, rv, x) {
     output$result <- renderPlot({
       if (isTruthy(rv$l_results)) {
         # bind stats model and climate model results
-        data_2 <- cbind(
-          summarize_results_change(rv$l_results),
-          # this is just the example data
-          data.frame(
-            climate_effect = c(2, 3), # blue line (constant)
-            climate_error = c(0.3, 0.4) # Error for blue
-          )
+        data_2 <- summarize_results_change(rv$l_results)
+        data_2 <- dplyr::select(
+          data_2,
+          time,
+          v_S_c_pred_mn,
+          v_S_c_pred_sd,
+          v_dS_c_mgmt_mn,
+          v_dS_c_mgmt_sd
         )
 
         # Convert data to long format for easier legend handling
         data_long <- tidyr::pivot_longer(
           data_2,
-          cols = c(total, climate_effect),
+          cols = c(v_S_c_pred_mn, v_dS_c_mgmt_mn),
           names_to = "category",
           values_to = "value"
         )
-
-        data_2$color_ribbon <- "striped area"
 
         # Plot
         ggplot2::ggplot(
           data_long,
           ggplot2::aes(x = time, y = value, color = category, group = category)
         ) +
-          # Shaded area
-          ggplot2::geom_ribbon(
-            data = data_2,
-            ggplot2::aes(
-              x = time,
-              ymin = climate_effect,
-              ymax = total,
-              fill = color_ribbon
-            ),
-            alpha = 0.5,
-            inherit.aes = FALSE
-          ) +
 
-          # Climate effect line
+          ## Climate effect line
           ggplot2::geom_line(size = 1.5) +
 
           # Error bars
@@ -151,9 +146,9 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = total - total_error,
-              ymax = total + total_error,
-              color = "total"
+              ymin = v_S_c_pred_mn - v_S_c_pred_sd,
+              ymax = v_S_c_pred_mn + v_S_c_pred_sd,
+              color = "v_S_c_pred_mn"
             ),
             width = 0.2,
             inherit.aes = FALSE
@@ -162,23 +157,34 @@ mod_results_server <- function(id, rv, x) {
             data = data_2,
             ggplot2::aes(
               x = time,
-              ymin = climate_effect - climate_error,
-              ymax = climate_effect + climate_error,
-              color = "climate effect"
+              ymin = v_dS_c_mgmt_mn -
+                v_dS_c_mgmt_sd,
+              ymax = v_dS_c_mgmt_mn +
+                v_dS_c_mgmt_sd,
+              color = "v_dS_c_mgmt_mn"
             ),
             width = 0.2,
             inherit.aes = FALSE
           ) +
           # Axis labels
-          ggplot2::labs(x = NULL, y = NULL, color = "Legend", fill = "Legend") + # Remove global x label
+          ggplot2::labs(
+            x = NULL,
+            y = expression("soil carbon (" * kgC ~ m^-2 * ")"),
+            color = "Legend",
+            fill = "Legend"
+          ) + # Remove global x label
           ggplot2::scale_color_manual(
-            values = c("total" = "#0483A4", "climate effect" = "#F49633")
+            values = c(
+              "v_S_c_pred_mn" = "#0483A4",
+              "v_dS_c_mgmt_mn" = "#F49633"
+            ),
+            labels = c(
+              "v_S_c_pred_mn" = "soil carbon estimate",
+              "v_dS_c_mgmt_mn" = "soil carbon estimate minus climate effect"
+            )
           ) +
-          ggplot2::scale_fill_manual(
-            name = "Result",
-            values = c("striped area" = "#37a635")
-          ) + # Updated fill mapping
 
+          ggplot2::theme_minimal() +
           ggplot2::theme(
             legend.background = ggplot2::element_blank(),
             legend.box.background = ggplot2::element_blank(),
@@ -186,7 +192,7 @@ mod_results_server <- function(id, rv, x) {
               fill = "transparent",
               color = NA
             ),
-            legend.text = ggplot2::element_text(size = 14),
+            legend.text = ggplot2::element_text(size = 10),
             panel.background = ggplot2::element_blank(),
             panel.border = ggplot2::element_rect(
               color = "#EAEFEC",
@@ -199,14 +205,116 @@ mod_results_server <- function(id, rv, x) {
               face = "bold",
               hjust = 0.5
             ),
-            axis.title.x = ggplot2::element_text(size = 16),
-            axis.title.y = ggplot2::element_text(size = 16),
+            axis.title.x = ggplot2::element_text(size = 14),
+            axis.title.y = ggplot2::element_text(size = 14),
             axis.text = ggplot2::element_text(size = 14)
           ) +
+          ggplot2::theme(
+            #axis.title.y = ggplot2::element_blank(),
+            axis.text.y = ggplot2::element_text(size = 12),
+            axis.text.x = ggplot2::element_text(size = 12) # Ensure x-axis labels are visible
+          )
+      } else {
+        return(NULL)
+      }
+    })
+
+    output$result_detailed <- renderPlot({
+      if (isTruthy(rv$l_results)) {
+        # bind stats model and climate model results
+        data_2 <- summarize_results_change(rv$l_results)
+        data_2 <- dplyr::select(
+          data_2,
+          time,
+          v_S_c_pred,
+          v_S_c_pred_error,
+          v_dc_clim_mn,
+          v_dc_clim_sd
+        )
+
+        # Convert data to long format for easier legend handling
+        data_long <- tidyr::pivot_longer(
+          data_2,
+          cols = c(v_S_c_pred, v_dc_clim_mn),
+          names_to = "category",
+          values_to = "value"
+        )
+
+        # Plot
+        ggplot2::ggplot(
+          data_long,
+          ggplot2::aes(x = time, y = value, color = category, group = category)
+        ) +
+
+          ## Climate effect line
+          ggplot2::geom_line(size = 1.5) +
+
+          # Error bars
+          ggplot2::geom_errorbar(
+            data = data_2,
+            ggplot2::aes(
+              x = time,
+              ymin = v_S_c_pred - v_S_c_pred_error,
+              ymax = v_S_c_pred + v_S_c_pred_error,
+              color = "v_S_c_pred"
+            ),
+            width = 0.2,
+            inherit.aes = FALSE
+          ) +
+          ggplot2::geom_errorbar(
+            data = data_2,
+            ggplot2::aes(
+              x = time,
+              ymin = v_dc_clim_mn - v_dc_clim_sd,
+              ymax = v_dc_clim_mn + v_dc_clim_sd,
+              color = "v_dc_clim_mn"
+            ),
+            width = 0.2,
+            inherit.aes = FALSE
+          ) +
+          # Axis labels
+          ggplot2::labs(
+            x = NULL,
+            y = expression("soil carbon (" * kgC ~ m^-2 * ")"),
+            color = "Legend",
+            fill = "Legend"
+          ) + # Remove global x label
+          ggplot2::scale_color_manual(
+            values = c("v_S_c_pred" = "#0483A4", "v_dc_clim_mn" = "#F49633"),
+            labels = c(
+              "v_S_c_pred" = "soil carbon estimate",
+              "v_dc_clim_mn" = "climate effect"
+            )
+          ) +
+
           ggplot2::theme_minimal() +
           ggplot2::theme(
-            axis.title.y = ggplot2::element_blank(),
-            axis.text.y = ggplot2::element_blank(),
+            legend.background = ggplot2::element_blank(),
+            legend.box.background = ggplot2::element_blank(),
+            legend.key = ggplot2::element_rect(
+              fill = "transparent",
+              color = NA
+            ),
+            legend.text = ggplot2::element_text(size = 10),
+            panel.background = ggplot2::element_blank(),
+            panel.border = ggplot2::element_rect(
+              color = "#EAEFEC",
+              fill = NA,
+              size = 1
+            ),
+            panel.grid.major = ggplot2::element_line(color = "#EAEFEC"),
+            plot.title = ggplot2::element_text(
+              size = 20,
+              face = "bold",
+              hjust = 0.5
+            ),
+            axis.title.x = ggplot2::element_text(size = 14),
+            axis.title.y = ggplot2::element_text(size = 14),
+            axis.text = ggplot2::element_text(size = 14)
+          ) +
+          ggplot2::theme(
+            #axis.title.y = ggplot2::element_blank(),
+            axis.text.y = ggplot2::element_text(size = 12),
             axis.text.x = ggplot2::element_text(size = 12) # Ensure x-axis labels are visible
           )
       } else {
@@ -222,7 +330,54 @@ mod_results_server <- function(id, rv, x) {
         ggplot2::ggplot(uncertainty_df) +
           ggplot2::geom_density(
             ggplot2::aes(value),
-            color = "#37a635",
+            color = "#0483A4",
+            size = 1.5
+          ) +
+          ggplot2::geom_density(
+            ggplot2::aes(v_dS_c_mgmt_dist),
+            color = "#F49633",
+            size = 1.5
+          ) +
+          ggplot2::labs(
+            title = "Distribution of difference\nin soil carbon",
+            x = "Difference",
+            y = "Probability density"
+          ) +
+          ggplot2::theme_minimal() +
+          ggplot2::theme(
+            plot.title = ggplot2::element_text(
+              size = 20,
+              face = "bold",
+              hjust = 0.5
+            ),
+            axis.title.x = ggplot2::element_text(size = 16),
+            axis.title.y = ggplot2::element_text(size = 16),
+            axis.text = ggplot2::element_text(size = 14),
+            panel.border = ggplot2::element_rect(
+              color = "#EAEFEC",
+              fill = NA,
+              size = 1
+            )
+          )
+      } else {
+        return(NULL)
+      }
+    })
+
+    output$uncertainty_graph_detailed <- renderPlot({
+      if (isTruthy(rv$l_results)) {
+        # get distribution of differences
+        uncertainty_df <- summarize_results_dist(rv$l_results)
+
+        ggplot2::ggplot(uncertainty_df) +
+          ggplot2::geom_density(
+            ggplot2::aes(value),
+            color = "#0483A4",
+            size = 1.5
+          ) +
+          ggplot2::geom_density(
+            ggplot2::aes(v_dc_clim),
+            color = "#F49633",
             size = 1.5
           ) +
           ggplot2::labs(

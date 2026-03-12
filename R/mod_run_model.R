@@ -96,9 +96,14 @@ mod_run_model_server <- function(id, rv, x) {
       df_selected <-
         rv$my_data %>%
         dplyr::filter(year >= min(years) & year <= max(years))
-
+      start_year <- min(df_selected$year, na.rm = TRUE)
+      end_year <- max(df_selected$year, na.rm = TRUE)
       # run models
-      rv$l_results <- soccatoa::run_model_A(df = df_selected)
+      rv$l_results <- soccatoa::run_model_A(
+        df = df_selected,
+        start_year = start_year,
+        end_year = end_year
+      )
 
       # rv$data_results_B <- soccatoa::run_model_B(df = df_selected,
       # yrstart = as.character(min(years)),
